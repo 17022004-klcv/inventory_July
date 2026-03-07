@@ -50,17 +50,6 @@ const styles = {
     alignItems: 'center',
     marginBottom: '36px',
   },
-  logoIcon: {
-    width: '64px',
-    height: '64px',
-    background: 'linear-gradient(135deg, #25eb46, #3b82f6)',
-    borderRadius: '18px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: '16px',
-    boxShadow: '0 8px 24px rgba(37,99,235,0.4)',
-  },
   logoText: {
     fontSize: '22px',
     fontWeight: '700',
@@ -161,6 +150,10 @@ const styles = {
 }
 
 export default function Login({ onLogin }) {
+
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // HOOKS — siempre van aquí arriba
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   const [usuario, setUsuario] = useState('')
   const [contrasena, setContrasena] = useState('')
   const [mostrarPass, setMostrarPass] = useState(false)
@@ -168,6 +161,9 @@ export default function Login({ onLogin }) {
   const [cargando, setCargando] = useState(false)
   const [inputFocus, setInputFocus] = useState('')
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // FUNCIONES — también van aquí arriba
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -178,44 +174,60 @@ export default function Login({ onLogin }) {
     }
 
     setCargando(true)
-    // Simulación de login — aquí conectarás tu API PHP
-    await new Promise(r => setTimeout(r, 1200))
-    setCargando(false)
+    try {
+      const response = await fetch('http://127.0.0.1:8000/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: usuario, password_usuario: contrasena })
+      })
 
-    if (usuario === 'admin' && contrasena === '1234') {
-      if (onLogin) onLogin()
-    } else {
-      setError('Usuario o contraseña incorrectos.')
+      const data = await response.json()
+
+      if (response.ok) {
+        if (onLogin) onLogin(data.usuario)
+      } else {
+        setError(data.error || 'Credenciales incorrectas.')
+      }
+    } catch (err) {
+      setError('No se pudo conectar con el servidor.')
+    } finally {
+      setCargando(false)
     }
   }
 
   const getFocusStyle = (field) => ({
     ...styles.input,
     borderColor: inputFocus === field ? 'rgba(59,130,246,0.6)' : 'rgba(255,255,255,0.1)',
-    background: inputFocus === field ? 'rgba(59, 246, 87, 0.08)' : 'rgba(255,255,255,0.06)',
+    background: inputFocus === field ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.06)',
     boxShadow: inputFocus === field ? '0 0 0 3px rgba(59,130,246,0.15)' : 'none',
   })
 
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  // JSX — todo lo visual va dentro del return
+  // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   return (
     <div style={styles.page}>
       <div style={styles.bgCircle1} />
       <div style={styles.bgCircle2} />
 
       <div style={styles.card}>
+
         {/* Logo */}
         <div style={styles.logoWrapper}>
-  <img
-    src={logo}
-    alt="Logo"
-    style={{
-      width: '80px',
-      height: '80px',
-      objectFit: 'contain',
-      marginBottom: '16px',
-      borderRadius: '50%'
-    }}
-  />
-  <div style={styles.logoText}>InventarioPOS</div>
+          <img
+            src={logo}
+            alt="Logo"
+            style={{
+              width: '80px',
+              height: '80px',
+              objectFit: 'contain',
+              marginBottom: '16px',
+              borderRadius: '50%'
+            }}
+          />
+          <div style={styles.logoText}>InventarioPOS</div>
+          <div style={styles.logoSub}>Sistema de gestión</div>
+        </div>
 
         <div style={styles.divider} />
 
@@ -229,7 +241,8 @@ export default function Login({ onLogin }) {
         )}
 
         <form onSubmit={handleSubmit}>
-          {/* Usuario */}
+
+          {/* Campo Usuario */}
           <label style={styles.label}>Usuario</label>
           <div style={styles.inputWrapper}>
             <span style={styles.inputIcon}>👤</span>
@@ -244,7 +257,7 @@ export default function Login({ onLogin }) {
             />
           </div>
 
-          {/* Contraseña */}
+          {/* Campo Contraseña */}
           <label style={styles.label}>Contraseña</label>
           <div style={styles.inputWrapper}>
             <span style={styles.inputIcon}>🔒</span>
@@ -271,7 +284,7 @@ export default function Login({ onLogin }) {
             </button>
           </div>
 
-          {/* Botón */}
+          {/* Botón submit */}
           <button
             type="submit"
             disabled={cargando}
@@ -281,16 +294,16 @@ export default function Login({ onLogin }) {
               transform: cargando ? 'scale(0.98)' : 'scale(1)',
             }}
             onMouseEnter={e => { if (!cargando) e.target.style.background = 'linear-gradient(135deg, #1d4ed8, #1e40af)' }}
-            onMouseLeave={e => { e.target.style.background = 'linear-gradient(135deg, #2563eb, #1d4ed8)' }}
+            onMouseLeave={e => { e.target.style.background = 'linear-gradient(135deg, #2980a9, #1d4ed8)' }}
           >
             {cargando ? '⏳ Verificando...' : 'Iniciar Sesión →'}
           </button>
+
         </form>
 
         <div style={styles.footer}>
           © 2025 InventarioPOS · Todos los derechos reservados
         </div>
-      </div>
 
       </div>
     </div>
