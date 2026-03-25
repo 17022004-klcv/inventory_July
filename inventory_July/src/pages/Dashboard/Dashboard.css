@@ -1,0 +1,49 @@
+/* Dashboard.css */
+
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.dashboard-main {
+  margin-left: 240px;
+  flex: 1;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+/* Estilos para Placeholder */
+.placeholder-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  flex-direction: column;
+  gap: 12px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.placeholder-icon {
+  font-size: 48px;
+}
+
+.placeholder-titulo {
+  color: #0f172a;
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+}
+
+.placeholder-texto {
+  color: #94a3b8;
+  margin: 0;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-main {
+    margin-left: 0;
+  }
+}
