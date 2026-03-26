@@ -4,6 +4,7 @@ import Proveedores from '../Proveedores/Proveedores'
 import Monitoreo from '../Monitoreo/Monitoreo'
 import Usuarios from '../Usuarios/Usuarios'
 import Clientes from '../Clientes/Clientes'
+import Categorias from '../Categorias/Categorias'
 import './Dashboard.css'  
 
 // Páginas placeholder para las demás secciones
@@ -23,7 +24,7 @@ export default function Dashboard({ onLogout, usuario }) {
       case 'dashboard':       return <Placeholder nombre="Dashboard" />
       case 'proveedores':     return <Proveedores />
       case 'lista-productos': return <Placeholder nombre="Lista de Productos" />
-      case 'categorias':      return <Placeholder nombre="Categorías" />
+      case 'categorias':      return <Categorias/>
       case 'clientes':        return <Clientes />
       case 'ventas':          return <Placeholder nombre="Ventas / POS" />
       case 'usuarios':        return <Usuarios />

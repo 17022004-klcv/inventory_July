@@ -23,3 +23,11 @@ Route::get('monitoreo', [MonitoreoController::class, 'index']);
 use App\Http\Controllers\UsuarioController;
 Route::apiResource('usuarios', UsuarioController::class);
 
+//Ruta para clientes
+use App\Http\Controllers\ClienteController;
+Route::apiResource('clientes', ClienteController::class);
+
+//ruta para categorias
+use App\Http\Controllers\CategoriaController;
+Route::apiResource('categorias', CategoriaController::class);
+
