@@ -31,3 +31,7 @@ Route::apiResource('clientes', ClienteController::class);
 use App\Http\Controllers\CategoriaController;
 Route::apiResource('categorias', CategoriaController::class);
 
+//ruta para productos
+use App\Http\Controllers\ProductosController;
+Route::apiResource('productos', ProductosController::class);
+

@@ -6,6 +6,7 @@ import Usuarios from '../Usuarios/Usuarios'
 import Clientes from '../Clientes/Clientes'
 import Categorias from '../Categorias/Categorias'
 import './Dashboard.css'  
+import Productos from '../Productos/Productos'
 
 // Páginas placeholder para las demás secciones
 const Placeholder = ({ nombre }) => (
@@ -23,7 +24,7 @@ export default function Dashboard({ onLogout, usuario }) {
     switch (paginaActual) {
       case 'dashboard':       return <Placeholder nombre="Dashboard" />
       case 'proveedores':     return <Proveedores />
-      case 'lista-productos': return <Placeholder nombre="Lista de Productos" />
+      case 'lista-productos': return <Productos />
       case 'categorias':      return <Categorias/>
       case 'clientes':        return <Clientes />
       case 'ventas':          return <Placeholder nombre="Ventas / POS" />
