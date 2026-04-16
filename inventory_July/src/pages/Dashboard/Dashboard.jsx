@@ -7,6 +7,7 @@ import Clientes from '../Clientes/Clientes'
 import Categorias from '../Categorias/Categorias'
 import './Dashboard.css'  
 import Productos from '../Productos/Productos'
+import Historial from '../Historial/Historial'
 
 // Páginas placeholder para las demás secciones
 const Placeholder = ({ nombre }) => (
@@ -29,7 +30,7 @@ export default function Dashboard({ onLogout, usuario }) {
       case 'clientes':        return <Clientes />
       case 'ventas':          return <Placeholder nombre="Ventas / POS" />
       case 'usuarios':        return <Usuarios />
-      case 'historial':       return <Placeholder nombre="Historial" />
+      case 'historial':       return <Historial />
       case 'monitoreo':       return <Monitoreo />
       default:                return <Placeholder nombre="Página no encontrada" />
     }

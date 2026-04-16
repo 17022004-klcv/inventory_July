@@ -35,3 +35,7 @@ Route::apiResource('categorias', CategoriaController::class);
 use App\Http\Controllers\ProductosController;
 Route::apiResource('productos', ProductosController::class);
 
+//ruta para historial
+use App\Http\Controllers\HistorialControlller;
+Route::get('historial', [HistorialControlller::class, 'index']);
+

@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
-import './Monitoreo.css'  // Importamos los estilos
+import './Monitoreo.css' 
+import StatsRow from '../../components/StatsRow/StatsRow' 
+import Table from '../../components/Table/Table'
+import Modal from '../../components/Modal/Modal'
 
 const API = 'http://127.0.0.1:8000/api'
 
@@ -20,6 +23,17 @@ export default function Monitoreo() {
   const [filtroTabla, setFiltroTabla] = useState('Todas')
   const [filtroAccion, setFiltroAccion] = useState('Todas')
   const [logDetalle, setLogDetalle] = useState(null)
+
+   const columnas = [
+    { header: '#', render: (fila, i) => i + 1 },
+    { header: 'Usuario', render: (fila) => fila.nombre_usuario || '—'   },
+    { header: 'Fecha', render: (fila) => formatFecha(fila.fecha )},
+    { header: 'Accion', render: (fila) => fila.accion },
+    { header: 'Tabla', render: (fila) => fila.tabla_afectada },
+    { header: 'Ip de Origen', render: (fila) => fila.ip_origen },
+    { header: 'Detalle', render: (fila) => (
+    <button className='btn-detalle' onClick={() => setLogDetalle(fila)}>Ver</button>
+)}]
 
   useEffect(() => {
     cargarLogs()
@@ -80,117 +94,32 @@ export default function Monitoreo() {
       </div>
 
       {/* Tarjetas de estadísticas */}
-      <div className="stats-row">
-        <div className="stat-card">
-          <div className="stat-num">{estadisticas.total}</div>
-          <div className="stat-label">Total Registros</div>
-        </div>
-        <div className="stat-card stat-card-inserts">
-          <div className="stat-num stat-num-inserts">{estadisticas.inserts}</div>
-          <div className="stat-label">Inserciones</div>
-        </div>
-        <div className="stat-card stat-card-updates">
-          <div className="stat-num stat-num-updates">{estadisticas.updates}</div>
-          <div className="stat-label">Actualizaciones</div>
-        </div>
-        <div className="stat-card stat-card-deletes">
-          <div className="stat-num stat-num-deletes">{estadisticas.deletes}</div>
-          <div className="stat-label">Eliminaciones</div>
-        </div>
-      </div>
+      <StatsRow estadisticas={estadisticas} />
 
       {/* Tabla */}
-      <div className="card">
-        {/* Filtros */}
-        <div className="filtros-row">
-          <input
-            className="buscador"
-            placeholder="🔍 Buscar por tabla, acción o usuario..."
-            value={busqueda}
-            onChange={e => setBusqueda(e.target.value)}
-          />
-          <select className="select-filtro" value={filtroTabla} onChange={e => setFiltroTabla(e.target.value)}>
-            {TABLAS.map(t => <option key={t} value={t}>{t === 'Todas' ? 'Todas las tablas' : t}</option>)}
-          </select>
-          <select className="select-filtro" value={filtroAccion} onChange={e => setFiltroAccion(e.target.value)}>
+      <Table
+        textBuscador="🔍 Buscar por tabla, acción o usuario..."
+        columnas={columnas}
+        datos={logsFiltrados}
+        cargando={cargando}
+        filtros={
+        <select className="select-filtro" value={filtroAccion} onChange={e => setFiltroAccion(e.target.value)}>
             <option value="Todas">Todas las acciones</option>
             <option value="INSERT">Inserción</option>
             <option value="UPDATE">Actualización</option>
             <option value="DELETE">Eliminación</option>
-          </select>
-          <span className="conteo">{logsFiltrados.length} registros</span>
-        </div>
+        </select>
+    }
+      >
+        </Table>
 
-        {cargando ? (
-          <div className="cargando">⏳ Cargando registros...</div>
-        ) : (
-          <div className="table-wrapper">
-            <table className="tabla-monitoreo">
-              <thead>
-                <tr>
-                  {['#', 'Fecha y Hora', 'Usuario', 'Acción', 'Tabla', 'IP Origen', 'Detalle'].map(h => (
-                    <th key={h}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {logsFiltrados.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="sin-datos">
-                      No hay registros de actividad.
-                    </td>
-                  </tr>
-                ) : (
-                  logsFiltrados.map((log, i) => {
-                    const accion = COLORES_ACCION[log.accion] || { bg: '#f1f5f9', color: '#475569', label: log.accion }
-                    return (
-                      <tr key={log.id_log} className="fila-log">
-                        <td className="celda">{i + 1}</td>
-                        <td className="celda">
-                          <span className="fecha-texto">{formatFecha(log.fecha)}</span>
-                        </td>
-                        <td className="celda">
-                          <div className="usuario-cell">
-                            <div className="avatar-small">
-                              {log.nombre_usuario?.charAt(0).toUpperCase() || '?'}
-                            </div>
-                            {log.nombre_usuario ? `${log.nombre_usuario} ${log.apellido_usuario || ''}` : `Usuario #${log.id_usuario}`}
-                          </div>
-                        </td>
-                        <td className="celda">
-                          <span className="badge" style={{ background: accion.bg, color: accion.color }}>
-                            {accion.label}
-                          </span>
-                        </td>
-                        <td className="celda">
-                          <span className="tabla-chip">{log.tabla_afectada}</span>
-                        </td>
-                        <td className="celda">{log.ip_origen || '—'}</td>
-                        <td className="celda">
-                          <button className="btn-detalle" onClick={() => setLogDetalle(log)}>
-                            Ver
-                          </button>
-                        </td>
-                      </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {/* Modal detxalle */}
+      {logDetalle &&(
+      <Modal
+      titulo={'Detalle del Registro'}
+      onClose={() => setLogDetalle(null)}>
 
-      {/* Modal detalle */}
-      {logDetalle && (
-        <div className="modal-overlay" onClick={() => setLogDetalle(null)}>
-          <div className="modal-contenido" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-titulo">Detalle del Registro</h2>
-              <button className="btn-cerrar" onClick={() => setLogDetalle(null)}>✕</button>
-            </div>
-
-            <div className="detalle-grid">
+        <div className="detalle-grid">
               <div className="detalle-item">
                 <span className="detalle-label">Fecha</span>
                 <span className="detalle-val">{formatFecha(logDetalle.fecha)}</span>
@@ -214,7 +143,7 @@ export default function Monitoreo() {
               </div>
             </div>
 
-            {logDetalle.detalle_json && (
+          {logDetalle.detalle_json && (
               <div className="json-section">
                 <div className="json-label">Datos del cambio:</div>
                 <pre className="json-box">
@@ -222,9 +151,11 @@ export default function Monitoreo() {
                 </pre>
               </div>
             )}
-          </div>
-        </div>
-      )}
+      
+        </Modal>
+
+ )}
+      
     </div>
   )
 }

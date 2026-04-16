@@ -1,5 +1,5 @@
 /* Página principal */
-.monitoreo-page {
+.his__page {
   padding: 32px;
   font-family: 'Segoe UI', system-ui, sans-serif;
   min-height: 100vh;
@@ -7,21 +7,21 @@
 }
 
 /* Header */
-.monitoreo-header {
+.his__header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 24px;
 }
 
-.monitoreo-titulo {
+.his__titulo {
   font-size: 24px;
   font-weight: 700;
   color: #0f172a;
   margin: 0;
 }
 
-.monitoreo-subtitulo {
+.his__subtitulo {
   font-size: 14px;
   color: #64748b;
   margin: 4px 0 0;
