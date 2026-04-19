@@ -39,3 +39,6 @@ Route::apiResource('productos', ProductosController::class);
 use App\Http\Controllers\HistorialControlller;
 Route::get('historial', [HistorialControlller::class, 'index']);
 
+//ruta para el pos
+use App\Http\Controllers\PosController;
+Route::post('pos', [PosController::class, 'procesarVenta']);

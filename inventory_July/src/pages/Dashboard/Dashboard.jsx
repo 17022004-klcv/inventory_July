@@ -8,6 +8,7 @@ import Categorias from "../Categorias/Categorias";
 import "./Dashboard.css";
 import Productos from "../Productos/Productos";
 import Historial from "../Historial/Historial";
+import POS from "../Pos/Pos";
 
 // Páginas placeholder para las demás secciones
 const Placeholder = ({ nombre }) => (
@@ -51,7 +52,11 @@ export default function Dashboard({ onLogout, usuario }) {
           <Placeholder nombre="No autorizado" />
         );
       case "ventas":
-        return <Placeholder nombre="Ventas / POS" />;
+        return rol === 1 || rol === 2 ? (
+          <POS />
+        ) : (
+          <Placeholder nombre="No autorizado" />
+        );
       case "usuarios":
         return rol === 1 ? (
           <Usuarios />

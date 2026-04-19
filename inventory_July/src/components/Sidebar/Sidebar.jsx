@@ -44,7 +44,7 @@ const NAV_ITEMS = [
     id: "ventas",
     label: "Ventas / POS",
     icon: <i className="bi bi-cart-fill"></i>,
-    roles: [1],
+    roles: [1, 2],
   },
   {
     id: "usuarios",
