@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
@@ -33,7 +34,7 @@ class AuthController extends Controller
         }
 
         // ── 3. Contraseña incorrecta ───────────────────
-        if ($user->password_usuario !== $contrasena) {
+        if (!Hash::check($contrasena, $user->password_usuario)) {
             DB::table('logs')->insert([
                 'id_usuario'     => $user->id_usuario,
                 'fecha'          => now(),

@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UsuarioController extends Controller{
 
@@ -12,8 +13,11 @@ class UsuarioController extends Controller{
 
     //post /api/usuarios - crear nuevo
     public function store(Request $request){
-        $usuario = Usuario::create($request->all());
-        return response() ->json($usuario, 201);
+        $usuario = Usuario::create([
+        ...$request->except('password_usuario'),
+        'password_usuario' => Hash::make($request->password_usuario)
+    ]);
+    return response()->json($usuario, 201);
     }
 
     //put /api/usuarios/{id} - editar
