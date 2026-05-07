@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import './Proveedores.css' 
 
-const API = 'http://127.0.0.1:8000/api'
-
+const API = import.meta.env.VITE_API_URL
 export default function Proveedores() {
   const [proveedores, setProveedores] = useState([])
   const [cargando, setCargando] = useState(true)

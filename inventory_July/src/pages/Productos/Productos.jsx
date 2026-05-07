@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import './Productos.css'
 
-const API = 'http://127.0.0.1:8000/api'
-
+const API = import.meta.env.VITE_API_URL
 export default function Productos(){
     const [productos, setProductos] = useState([]);
     const [categorias, setCategorias] = useState([]);

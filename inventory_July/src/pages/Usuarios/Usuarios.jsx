@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react'
 import './Usuarios.css'  
 
-const API = 'http://127.0.0.1:8000/api'
-
+const API = import.meta.env.VITE_API_URL
 const ROLES = {
   1: { label: 'Administrador', bg: '#dbeafe', color: '#1d4ed8' },
   2: { label: 'Vendedor', bg: '#dcfce7', color: '#16a34a' },

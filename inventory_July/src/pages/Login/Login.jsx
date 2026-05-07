@@ -3,6 +3,7 @@ import logo from '../../assets/img/logo.png'
 import './Login.css'
 
 export default function Login({ onLogin }) {
+  const API = import.meta.env.VITE_API_URL
   const [usuario, setUsuario] = useState('')
   const [contrasena, setContrasena] = useState('')
   const [mostrarPass, setMostrarPass] = useState(false)
@@ -20,7 +21,7 @@ export default function Login({ onLogin }) {
 
     setCargando(true)
     try {
-      const response = await fetch('http://127.0.0.1:8000/api/login', {
+     const response = await fetch(`${API}/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: usuario, password_usuario: contrasena })

@@ -1,7 +1,7 @@
 import { useState, useEffect, use } from 'react'
 import './Categorias.css';
 
-const API = 'http://127.0.0.1:8000/api'
+const API = import.meta.env.VITE_API_URL
 
 export default function Categorias(){
 

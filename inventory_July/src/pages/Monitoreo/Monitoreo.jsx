@@ -4,8 +4,7 @@ import StatsRow from '../../components/StatsRow/StatsRow'
 import Table from '../../components/Table/Table'
 import Modal from '../../components/Modal/Modal'
 
-const API = 'http://127.0.0.1:8000/api'
-
+const API = import.meta.env.VITE_API_URL
 const COLORES_ACCION = {
   INSERT:        { bg: '#dcfce7', color: '#16a34a', label: 'Inserción' },
   UPDATE:        { bg: '#fef9c3', color: '#ca8a04', label: 'Actualización' },
