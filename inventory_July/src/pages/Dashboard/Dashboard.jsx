@@ -53,7 +53,7 @@ export default function Dashboard({ onLogout, usuario }) {
         );
       case "ventas":
         return rol === 1 || rol === 2 ? (
-          <POS />
+          <POS usuario={usuario} />
         ) : (
           <Placeholder nombre="No autorizado" />
         );

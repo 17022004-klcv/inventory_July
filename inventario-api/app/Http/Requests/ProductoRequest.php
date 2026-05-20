@@ -31,6 +31,7 @@ class ProductoRequest extends FormRequest
             'precio_unitario' => [$isUpdate ? 'sometimes' : 'required', 'numeric', 'min:0'],
             'precio_final'    => [$isUpdate ? 'sometimes' : 'required', 'numeric', 'min:0'],
             'activo'          => 'boolean',
+            'codigo_barras'   => 'nullable|string|max:50|unique:productos,codigo_barras'
         ];
     }
 }

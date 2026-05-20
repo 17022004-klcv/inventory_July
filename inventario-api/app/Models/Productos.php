@@ -18,7 +18,8 @@ class Productos extends Model
         'precio_final',
         'id_proveedor',
         'activo',
-        'updated_at'
+        'updated_at',
+        'codigo_barras'
     ];
 
     public function categoria()

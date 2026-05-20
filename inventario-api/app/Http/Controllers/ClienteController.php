@@ -6,9 +6,20 @@ use Illuminate\Http\Request;
 class ClienteController extends Controller
 {
     //get api/cliente
-    public function index(){
-        return response() ->json(Cliente::all());
+  public function index(Request $request){
+    $query = Cliente::query();
+    
+    if ($request->has('buscar') && $request->buscar != '') {
+        $buscar = $request->buscar;
+        $query->where(function($q) use ($buscar) {
+            $q->where('nombre_cliente', 'ilike', "%{$buscar}%")
+              ->orWhere('apellido_cliente', 'ilike', "%{$buscar}%")
+              ->orWhere('telefono_cliente', 'ilike', "%{$buscar}%");
+        });
     }
+    
+    return response()->json($query->where('activo', true)->get());
+}
 
     //post api/cliente -crear nuevo
     public function store(Request $request){

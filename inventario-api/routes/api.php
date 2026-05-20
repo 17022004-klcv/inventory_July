@@ -33,6 +33,7 @@ Route::apiResource('categorias', CategoriaController::class);
 
 //ruta para productos
 use App\Http\Controllers\ProductosController;
+Route::get('productos/barcode/{codigo}', [ProductosController::class, 'buscarPorCodigo']);
 Route::apiResource('productos', ProductosController::class);
 
 //ruta para historial
@@ -42,3 +43,5 @@ Route::get('historial', [HistorialControlller::class, 'index']);
 //ruta para el pos
 use App\Http\Controllers\PosController;
 Route::post('pos', [PosController::class, 'procesarVenta']);
+
+

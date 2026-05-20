@@ -48,4 +48,19 @@ class ProductosController extends Controller
 
         return response()->json(['mensaje' => 'Producto desactivado'], 200);
     }
+
+    // GET api/productos/barcode/{codigo}
+    public function buscarPorCodigo($codigo)
+    {
+        $producto = Productos::with(['categoria', 'proveedor'])
+                            ->where('codigo_barras', $codigo)
+                            ->where('activo', true)
+                            ->first();
+
+        if (!$producto) {
+            return response()->json(['error' => 'Producto no encontrado'], 404);
+        }
+
+        return response()->json($producto);
+    }
 }
