@@ -44,4 +44,10 @@ Route::get('historial', [HistorialControlller::class, 'index']);
 use App\Http\Controllers\PosController;
 Route::post('pos', [PosController::class, 'procesarVenta']);
 
-
+// Rutas para dashboard
+use App\Http\Controllers\DashboardController;
+Route::get('dashboard/stats', [DashboardController::class, 'stats']);
+Route::get('dashboard/ventas', [DashboardController::class, 'ventas']);
+Route::get('dashboard/clientes-frecuentes', [DashboardController::class, 'clientesFrecuentes']);
+Route::get('dashboard/stock-bajo', [DashboardController::class, 'stockBajo']);
+Route::get('dashboard/vencimientos', [DashboardController::class, 'vencimientos']);
