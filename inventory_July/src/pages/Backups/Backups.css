@@ -1,0 +1,472 @@
+/* ── Página ── */
+.backups-page {
+  padding: 28px;
+  min-height: 100vh;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ── Header ── */
+.backups-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.backups-titulo {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.backups-titulo i {
+  color: #6366f1;
+}
+
+.backups-subtitulo {
+  color: #6b7280;
+  margin: 4px 0 0 0;
+  font-size: 0.9rem;
+}
+
+/* ── Notificaciones ── */
+.exito-box {
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+  color: #065f46;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.error-box {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #991b1b;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ── Info box ── */
+.backup-info-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 14px 18px;
+  color: #1e40af;
+  font-size: 0.88rem;
+}
+
+.backup-info-box i {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+.backup-info-box p {
+  margin: 0;
+}
+
+/* ── Botón crear ── */
+.btn-crear-backup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 10px;
+  border: none;
+  background: #6366f1;
+  color: white;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-crear-backup:hover:not(:disabled) {
+  background: #4f46e5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+}
+
+.btn-crear-backup:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Spinner ── */
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Card ── */
+.backups-card {
+  background: white;
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.backups-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.backups-card-titulo {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.backups-card-titulo i {
+  color: #6366f1;
+}
+
+.backups-conteo {
+  font-size: 0.82rem;
+  color: #9ca3af;
+  background: #f3f4f6;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+/* ── Cargando / vacío ── */
+.backups-cargando {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+  color: #6b7280;
+}
+
+.backups-vacio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 50px 20px;
+  color: #9ca3af;
+  text-align: center;
+}
+
+.backups-vacio i {
+  font-size: 2.5rem;
+  color: #d1d5db;
+}
+.backups-vacio p {
+  font-weight: 600;
+  margin: 0;
+  color: #6b7280;
+}
+.backups-vacio span {
+  font-size: 0.85rem;
+}
+
+/* ── Tabla ── */
+.tabla-wrapper {
+  overflow-x: auto;
+}
+
+.backups-tabla {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.backups-tabla thead tr {
+  border-bottom: 2px solid #f3f4f6;
+  background: #f9fafb;
+}
+
+.backups-tabla th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #6b7280;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.backups-tabla th i {
+  margin-right: 6px;
+  color: #9ca3af;
+}
+
+.backups-tabla tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.15s;
+}
+
+.backups-tabla tbody tr:hover {
+  background: #fafafa;
+}
+
+.backups-tabla td {
+  padding: 14px 16px;
+  vertical-align: middle;
+}
+
+.backup-nombre {
+  font-weight: 500;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+
+.backup-nombre i {
+  color: #6366f1;
+}
+.backup-fecha {
+  color: #6b7280;
+  white-space: nowrap;
+}
+.backup-tamanio {
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+/* ── Badge cifrado ── */
+.badge-cifrado {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #d1fae5;
+  color: #065f46;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+/* ── Acciones ── */
+.backup-acciones {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-descargar,
+.btn-restaurar,
+.btn-eliminar {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+}
+
+.btn-descargar {
+  background: #eff6ff;
+  color: #3b82f6;
+}
+
+.btn-descargar:hover {
+  background: #3b82f6;
+  color: white;
+}
+
+.btn-restaurar {
+  background: #fef9c3;
+  color: #854d0e;
+}
+
+.btn-restaurar:hover:not(:disabled) {
+  background: #f59e0b;
+  color: white;
+}
+
+.btn-eliminar {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.btn-eliminar:hover:not(:disabled) {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-descargar:disabled,
+.btn-restaurar:disabled,
+.btn-eliminar:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Modal confirmar ── */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.confirm-box {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  max-width: 420px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.confirm-icon {
+  font-size: 2.5rem;
+  color: #f59e0b;
+  margin-bottom: 12px;
+}
+
+.confirm-box h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+.confirm-box p {
+  font-size: 0.88rem;
+  color: #6b7280;
+  margin: 0 0 6px 0;
+}
+
+.confirm-nombre {
+  font-weight: 600;
+  color: #0f172a;
+  font-size: 0.82rem;
+  background: #f3f4f6;
+  padding: 6px 12px;
+  border-radius: 6px;
+  word-break: break-all;
+}
+
+.confirm-advertencia {
+  color: #ef4444;
+  font-weight: 600;
+  margin-top: 8px;
+}
+
+.confirm-botones {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.btn-cancelar {
+  padding: 10px 24px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  background: white;
+  color: #6b7280;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancelar:hover {
+  background: #f3f4f6;
+}
+
+.btn-restaurar-confirm {
+  padding: 10px 24px;
+  border-radius: 8px;
+  border: none;
+  background: #f59e0b;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-restaurar-confirm:hover {
+  background: #d97706;
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .backups-page {
+    padding: 16px;
+  }
+  .backups-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .btn-crear-backup {
+    width: 100%;
+    justify-content: center;
+  }
+  .backup-nombre {
+    font-size: 0.78rem;
+  }
+}

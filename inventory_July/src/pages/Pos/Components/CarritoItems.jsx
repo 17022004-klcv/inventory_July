@@ -2,7 +2,10 @@ export default function CarritoItems({ items, onEliminar, onCambiarCantidad }) {
   if (items.length === 0) {
     return (
       <div className="carrito-vacio">
-        <p>📦 Escanea o busca un producto para comenzar</p>
+        <p>
+          <i className="bi bi-box-seam me-1"></i> Escanea o busca un producto
+          para comenzar
+        </p>
       </div>
     );
   }
@@ -32,14 +35,14 @@ export default function CarritoItems({ items, onEliminar, onCambiarCantidad }) {
                     className="btn-cantidad"
                     onClick={() => onCambiarCantidad(index, item.cantidad - 1)}
                   >
-                    −
+                    <i className="bi bi-dash"></i>
                   </button>
                   <span className="carrito-item-cantidad">{item.cantidad}</span>
                   <button
                     className="btn-cantidad"
                     onClick={() => onCambiarCantidad(index, item.cantidad + 1)}
                   >
-                    +
+                    <i className="bi bi-plus"></i>
                   </button>
                 </div>
               </td>
@@ -51,7 +54,7 @@ export default function CarritoItems({ items, onEliminar, onCambiarCantidad }) {
                   className="btn-eliminar-item"
                   onClick={() => onEliminar(index)}
                 >
-                  🗑
+                  <i className="bi bi-trash-fill"></i>
                 </button>
               </td>
             </tr>

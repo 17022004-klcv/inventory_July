@@ -4,7 +4,6 @@ import Modal from "../../components/Modal/Modal";
 import "./Pos.css";
 
 const API = import.meta.env.VITE_API_URL;
-const IVA = 0.13;
 
 export default function POS({ usuario }) {
   const [items, setItems] = useState([]);
@@ -31,13 +30,11 @@ export default function POS({ usuario }) {
   // Cobro
   const [montoPagado, setMontoPagado] = useState("");
 
-  // Cálculos
-  const subtotal = items.reduce(
+  // Cálculos sin IVA
+  const total = items.reduce(
     (acc, item) => acc + item.precio_final * item.cantidad,
     0,
   );
-  const iva = subtotal * IVA;
-  const total = subtotal + iva;
   const cambio = parseFloat(montoPagado) - total;
 
   // ── Clientes ──
@@ -181,7 +178,7 @@ export default function POS({ usuario }) {
       const data = await res.json();
       if (res.ok) {
         setExito(
-          `✓ Venta #${data.id_venta} procesada — Total: $${parseFloat(data.total).toFixed(2)}`,
+          `Venta #${data.id_venta} procesada — Total: $${parseFloat(data.total).toFixed(2)}`,
         );
         limpiarVenta();
         setModalCobrar(false);
@@ -210,12 +207,27 @@ export default function POS({ usuario }) {
           className={`btn-escaner ${escanerActivo ? "btn-escaner-activo" : ""}`}
           onClick={() => setEscanerActivo(!escanerActivo)}
         >
-          {escanerActivo ? "⏹ Detener Cámara" : "📷 Activar Cámara"}
+          <i
+            className={
+              escanerActivo
+                ? "bi bi-camera-video-off-fill me-1"
+                : "bi bi-camera-video-fill me-1"
+            }
+          ></i>
+          {escanerActivo ? "Detener Cámara" : "Activar Cámara"}
         </button>
       </div>
 
-      {exito && <div className="exito-box">✓ {exito}</div>}
-      {error && <div className="error-box">⚠ {error}</div>}
+      {exito && (
+        <div className="exito-box">
+          <i className="bi bi-check-circle-fill me-1"></i> {exito}
+        </div>
+      )}
+      {error && (
+        <div className="error-box">
+          <i className="bi bi-exclamation-triangle-fill me-1"></i> {error}
+        </div>
+      )}
 
       <div className="pos-contenido">
         {/* Columna izquierda */}
@@ -223,7 +235,7 @@ export default function POS({ usuario }) {
           {/* Botones acción */}
           <div className="pos-acciones">
             <button className="btn-accion" onClick={abrirModalCliente}>
-              👤 Cliente
+              <i className="bi bi-person-fill me-1"></i> Cliente
               {clienteSeleccionado && (
                 <span className="badge-cliente">
                   {clienteSeleccionado.nombre_cliente}
@@ -231,21 +243,23 @@ export default function POS({ usuario }) {
               )}
             </button>
             <button className="btn-accion" onClick={abrirModalProducto}>
-              🔍 Producto
+              <i className="bi bi-search me-1"></i> Producto
             </button>
             <button
               className="btn-accion btn-cobrar-accion"
               onClick={() => setModalCobrar(true)}
               disabled={items.length === 0}
             >
-              💰 Cobrar
+              <i className="bi bi-cash-coin me-1"></i> Cobrar
             </button>
           </div>
 
           {/* Escáner */}
           {escanerActivo && (
             <div className="card">
-              <h2 className="card-titulo">📷 Escáner</h2>
+              <h2 className="card-titulo">
+                <i className="bi bi-camera-video-fill me-1"></i> Escáner
+              </h2>
               <EscanerCamara
                 onCodigoDetectado={manejarCodigo}
                 activo={escanerActivo}
@@ -259,7 +273,9 @@ export default function POS({ usuario }) {
           {/* Tabla de items */}
           <div className="card">
             <div className="carrito-header">
-              <h2 className="card-titulo">🛒 Items</h2>
+              <h2 className="card-titulo">
+                <i className="bi bi-cart-fill me-1"></i> Items
+              </h2>
               {items.length > 0 && (
                 <button className="btn-limpiar" onClick={limpiarVenta}>
                   Limpiar
@@ -275,22 +291,21 @@ export default function POS({ usuario }) {
                     <th>Producto</th>
                     <th>Cantidad</th>
                     <th>Precio Unit.</th>
-                    <th>IVA</th>
-                    <th>Subtotal</th>
+                    <th>Total</th>
                     <th></th>
                   </tr>
                 </thead>
                 <tbody>
                   {items.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="carrito-vacio">
-                        📦 Agrega productos para comenzar
+                      <td colSpan={6} className="carrito-vacio">
+                        <i className="bi bi-box-seam me-1"></i> Agrega productos
+                        para comenzar
                       </td>
                     </tr>
                   ) : (
                     items.map((item, index) => {
                       const subtotalItem = item.precio_final * item.cantidad;
-                      const ivaItem = subtotalItem * IVA;
                       return (
                         <tr key={index}>
                           <td className="celda-id">{item.id_producto}</td>
@@ -305,10 +320,10 @@ export default function POS({ usuario }) {
                                   cambiarCantidad(index, item.cantidad - 1)
                                 }
                               >
-                                −
+                                <i className="bi bi-dash"></i>
                               </button>
                               <span className="carrito-item-cantidad">
-                                {item.cantidad}
+                                {item.container || item.cantidad}
                               </span>
                               <button
                                 className="btn-cantidad"
@@ -316,14 +331,13 @@ export default function POS({ usuario }) {
                                   cambiarCantidad(index, item.cantidad + 1)
                                 }
                               >
-                                +
+                                <i className="bi bi-plus"></i>
                               </button>
                             </div>
                           </td>
                           <td className="carrito-precio">
                             ${parseFloat(item.precio_final).toFixed(2)}
                           </td>
-                          <td className="carrito-iva">${ivaItem.toFixed(2)}</td>
                           <td className="carrito-subtotal">
                             ${subtotalItem.toFixed(2)}
                           </td>
@@ -332,7 +346,7 @@ export default function POS({ usuario }) {
                               className="btn-eliminar-item"
                               onClick={() => cambiarCantidad(index, 0)}
                             >
-                              🗑
+                              <i className="bi bi-trash-fill"></i>
                             </button>
                           </td>
                         </tr>
@@ -346,14 +360,6 @@ export default function POS({ usuario }) {
             {/* Totales */}
             {items.length > 0 && (
               <div className="pos-totales">
-                <div className="total-fila">
-                  <span>Subtotal:</span>
-                  <span>${subtotal.toFixed(2)}</span>
-                </div>
-                <div className="total-fila">
-                  <span>IVA (13%):</span>
-                  <span>${iva.toFixed(2)}</span>
-                </div>
                 <div className="total-fila total-final">
                   <span>TOTAL:</span>
                   <span>${total.toFixed(2)}</span>
@@ -367,12 +373,16 @@ export default function POS({ usuario }) {
       {/* ── Modal Cliente ── */}
       {modalCliente && (
         <Modal
-          titulo="👤 Seleccionar Cliente"
+          titulo={
+            <>
+              <i className="bi bi-person-fill me-1"></i> Seleccionar Cliente
+            </>
+          }
           onClose={() => setModalCliente(false)}
         >
           <input
             className="modal-buscador"
-            placeholder="🔍 Buscar por nombre o teléfono..."
+            placeholder="Buscar por nombre o teléfono..."
             value={busquedaCliente}
             onChange={(e) => buscarCliente(e.target.value)}
             autoFocus
@@ -385,9 +395,13 @@ export default function POS({ usuario }) {
                 setModalCliente(false);
               }}
             >
-              <span>👤 Cliente Contado</span>
+              <span>
+                <i className="bi bi-person-fill me-1"></i> Cliente Contado
+              </span>
               {!clienteSeleccionado && (
-                <span className="badge-seleccionado">✓</span>
+                <span className="badge-seleccionado">
+                  <i className="bi bi-check-lg"></i>
+                </span>
               )}
             </div>
             {clientes.map((c) => (
@@ -405,7 +419,9 @@ export default function POS({ usuario }) {
                   </p>
                 </div>
                 {clienteSeleccionado?.id_cliente === c.id_cliente && (
-                  <span className="badge-seleccionado">✓</span>
+                  <span className="badge-seleccionado">
+                    <i className="bi bi-check-lg"></i>
+                  </span>
                 )}
               </div>
             ))}
@@ -416,12 +432,16 @@ export default function POS({ usuario }) {
       {/* ── Modal Producto ── */}
       {modalProducto && (
         <Modal
-          titulo="🔍 Buscar Producto"
+          titulo={
+            <>
+              <i className="bi bi-search me-1"></i> Buscar Producto
+            </>
+          }
           onClose={() => setModalProducto(false)}
         >
           <input
             className="modal-buscador"
-            placeholder="🔍 Buscar por nombre o código..."
+            placeholder="Buscar por nombre o código..."
             value={busquedaProducto}
             onChange={(e) => buscarProducto(e.target.value)}
             autoFocus
@@ -451,7 +471,11 @@ export default function POS({ usuario }) {
       {/* ── Modal Cobrar ── */}
       {modalCobrar && (
         <Modal
-          titulo="💰 Confirmar Venta"
+          titulo={
+            <>
+              <i className="bi bi-cash-coin me-1"></i> Confirmar Venta
+            </>
+          }
           onClose={() => setModalCobrar(false)}
         >
           <div className="cobrar-resumen">
@@ -462,14 +486,6 @@ export default function POS({ usuario }) {
                   ? `${clienteSeleccionado.nombre_cliente} ${clienteSeleccionado.apellido_cliente}`
                   : "Contado"}
               </span>
-            </div>
-            <div className="cobrar-fila">
-              <span>Subtotal:</span>
-              <span>${subtotal.toFixed(2)}</span>
-            </div>
-            <div className="cobrar-fila">
-              <span>IVA (13%):</span>
-              <span>${iva.toFixed(2)}</span>
             </div>
             <div className="cobrar-fila cobrar-total">
               <span>TOTAL:</span>
@@ -494,7 +510,10 @@ export default function POS({ usuario }) {
               </div>
             )}
             {montoPagado && parseFloat(montoPagado) < total && (
-              <p className="cobrar-error">⚠ Monto insuficiente</p>
+              <p className="cobrar-error">
+                <i className="bi bi-exclamation-triangle-fill me-1"></i> Monto
+                insuficiente
+              </p>
             )}
           </div>
 
@@ -505,7 +524,13 @@ export default function POS({ usuario }) {
               cargando || !montoPagado || parseFloat(montoPagado) < total
             }
           >
-            {cargando ? "Procesando..." : "✓ Confirmar Venta"}
+            {cargando ? (
+              "Procesando..."
+            ) : (
+              <>
+                <i className="bi bi-check-lg me-1"></i> Confirmar Venta
+              </>
+            )}
           </button>
         </Modal>
       )}

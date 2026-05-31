@@ -36,7 +36,7 @@ export default function BuscadorProducto({ onProductoSeleccionado }) {
       <div className="buscador-input-wrapper">
         <input
           className="buscador-producto-input"
-          placeholder="🔍 Buscar producto por nombre..."
+          placeholder="Buscar producto por nombre..."
           value={busqueda}
           onChange={(e) => buscarProducto(e.target.value)}
         />

@@ -51,3 +51,11 @@ Route::get('dashboard/ventas', [DashboardController::class, 'ventas']);
 Route::get('dashboard/clientes-frecuentes', [DashboardController::class, 'clientesFrecuentes']);
 Route::get('dashboard/stock-bajo', [DashboardController::class, 'stockBajo']);
 Route::get('dashboard/vencimientos', [DashboardController::class, 'vencimientos']);
+
+// Rutas para backup
+use App\Http\Controllers\BackupController;
+Route::post('backup/crear', [BackupController::class, 'crear']);
+Route::get('backup/listar', [BackupController::class, 'listar']);
+Route::get('backup/descargar/{nombre}', [BackupController::class, 'descargar']);
+Route::post('backup/restaurar/{nombre}', [BackupController::class, 'restaurar']);
+Route::delete('backup/eliminar/{nombre}', [BackupController::class, 'eliminar']);

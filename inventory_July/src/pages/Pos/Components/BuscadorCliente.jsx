@@ -45,7 +45,9 @@ export default function BuscadorCliente({ onClienteSeleccionado }) {
       {clienteSeleccionado ? (
         <div className="cliente-seleccionado">
           <div className="cliente-info">
-            <span className="cliente-icono">👤</span>
+            <span className="cliente-icono">
+              <i className="bi bi-person-fill"></i>
+            </span>
             <div>
               <p className="cliente-nombre">
                 {clienteSeleccionado.nombre_cliente}{" "}
@@ -57,7 +59,7 @@ export default function BuscadorCliente({ onClienteSeleccionado }) {
             </div>
           </div>
           <button className="btn-limpiar-cliente" onClick={limpiar}>
-            ✕
+            <i className="bi bi-x-lg"></i>
           </button>
         </div>
       ) : (
@@ -65,7 +67,7 @@ export default function BuscadorCliente({ onClienteSeleccionado }) {
           <div className="buscador-input-wrapper">
             <input
               className="buscador-cliente-input"
-              placeholder="🔍 Buscar cliente o dejar como Contado"
+              placeholder="Buscar cliente o dejar como Contado"
               value={busqueda}
               onChange={(e) => buscarCliente(e.target.value)}
             />
@@ -91,7 +93,8 @@ export default function BuscadorCliente({ onClienteSeleccionado }) {
 
           {busqueda.length === 0 && (
             <p className="cliente-contado-label">
-              👤 Cliente: <strong>Contado</strong>
+              <i className="bi bi-person-fill me-1"></i> Cliente:{" "}
+              <strong>Contado</strong>
             </p>
           )}
         </div>

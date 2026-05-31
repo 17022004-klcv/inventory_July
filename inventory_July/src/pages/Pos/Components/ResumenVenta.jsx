@@ -1,10 +1,8 @@
 export default function ResumenVenta({ items, onCobrar, cargando }) {
-  const subtotal = items.reduce(
+  const total = items.reduce(
     (acc, item) => acc + item.precio_final * item.cantidad,
     0,
   );
-  const iva = subtotal * 0.13;
-  const total = subtotal + iva;
   const totalItems = items.reduce((acc, item) => acc + item.cantidad, 0);
 
   return (
@@ -16,14 +14,6 @@ export default function ResumenVenta({ items, onCobrar, cargando }) {
       <div className="resumen-fila">
         <span>Items distintos:</span>
         <span>{items.length}</span>
-      </div>
-      <div className="resumen-fila">
-        <span>Subtotal:</span>
-        <span>${subtotal.toFixed(2)}</span>
-      </div>
-      <div className="resumen-fila">
-        <span>IVA (13%):</span>
-        <span>${iva.toFixed(2)}</span>
       </div>
       <div className="resumen-total">
         <span>TOTAL</span>

@@ -59,6 +59,12 @@ const NAV_ITEMS = [
     roles: [1],
   },
   {
+    id: "backups",
+    label: "Backups",
+    icon: <i className="bi bi-database-fill-gear"></i>,
+    roles: [1],
+  },
+  {
     id: "monitoreo",
     label: "Monitoreo",
     icon: <i className="bi bi-shield-exclamation"></i>,

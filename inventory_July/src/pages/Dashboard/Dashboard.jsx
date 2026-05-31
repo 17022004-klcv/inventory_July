@@ -10,6 +10,7 @@ import Productos from "../Productos/Productos";
 import Historial from "../Historial/Historial";
 import POS from "../Pos/Pos";
 import DashboardHome from "./DashboardHome";
+import Backups from "../Backups/Backups";
 
 // Páginas placeholder para las demás secciones
 const Placeholder = ({ nombre }) => (
@@ -81,6 +82,9 @@ export default function Dashboard({ onLogout, usuario }) {
         ) : (
           <Placeholder nombre="No autorizado" />
         );
+
+      case "backups":
+        return rol === 1 ? <Backups /> : <Placeholder nombre="No autorizado" />;
       default:
         return <Placeholder nombre="Página no encontrada" />;
     }
