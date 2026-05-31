@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import Table from "../../components/Table/Table";
+import Modal from "../../components/Modal/Modal";
 import "./Backups.css";
 
 const API = import.meta.env.VITE_API_URL;
@@ -134,32 +136,101 @@ export default function Backups() {
     });
   };
 
+  // Configuración de columnas para <Table />
+  const columnasConfig = [
+    {
+      header: "Archivo",
+      searchValue: (b) => b.nombre,
+      render: (b) => (
+        <div className="backup-nombre">
+          <i className="bi bi-file-earmark-lock2-fill"></i>
+          {b.nombre}
+        </div>
+      ),
+    },
+    {
+      header: "Fecha",
+      render: (b) => (
+        <span className="backup-fecha">{formatearFecha(b.fecha)}</span>
+      ),
+    },
+    {
+      header: "Tamaño",
+      render: (b) => (
+        <span className="backup-tamanio">{formatearTamanio(b.tamanio)}</span>
+      ),
+    },
+    {
+      header: "Estado",
+      render: () => (
+        <span className="badge-cifrado">
+          <i className="bi bi-lock-fill"></i> Cifrado
+        </span>
+      ),
+    },
+    {
+      header: "Acciones",
+      render: (b) => (
+        <div className="backup-acciones">
+          <button
+            className="btn-icon btn-descargar"
+            onClick={() => descargarBackup(b.nombre)}
+            title="Descargar"
+          >
+            <i className="bi bi-download"></i>
+          </button>
+          <button
+            className="btn-icon btn-restaurar"
+            onClick={() => setConfirmarRestaurar(b.nombre)}
+            disabled={restaurando === b.nombre}
+            title="Restaurar"
+          >
+            {restaurando === b.nombre ? (
+              <span className="spinner-small"></span>
+            ) : (
+              <i className="bi bi-arrow-counterclockwise"></i>
+            )}
+          </button>
+          <button
+            className="btn-icon btn-eliminar"
+            onClick={() => eliminarBackup(b.nombre)}
+            disabled={eliminando === b.nombre}
+            title="Eliminar"
+          >
+            {eliminando === b.nombre ? (
+              <span className="spinner-small"></span>
+            ) : (
+              <i className="bi bi-trash"></i>
+            )}
+          </button>
+        </div>
+      ),
+    },
+  ];
+
   return (
     <div className="backups-page">
-      {/* Header */}
+      {/* Header (Sin icono inicial en el título) */}
       <div className="backups-header">
         <div>
-          <h1 className="backups-titulo">
-            <i className="bi bi-database-fill-gear"></i> Backups
-          </h1>
+          <h1 className="backups-titulo">Backups</h1>
           <p className="backups-subtitulo">
             Gestiona las copias de seguridad de la base de datos
           </p>
         </div>
         <button
-          className="btn-crear-backup"
+          className="btn-primario"
           onClick={crearBackup}
           disabled={creando}
         >
           {creando ? (
             <>
-              <span className="spinner-small"></span>
+              <span className="spinner-small me-2"></span>
               Creando backup...
             </>
           ) : (
             <>
-              <i className="bi bi-plus-circle-fill"></i>
-              Crear Backup
+              <i className="bi bi-plus-circle-fill"></i> Crear Backup
             </>
           )}
         </button>
@@ -177,7 +248,7 @@ export default function Backups() {
         </div>
       )}
 
-      {/* Info */}
+      {/* Caja Informativa de Seguridad */}
       <div className="backup-info-box">
         <i className="bi bi-shield-lock-fill"></i>
         <p>
@@ -186,21 +257,65 @@ export default function Backups() {
         </p>
       </div>
 
-      {/* Modal confirmar restaurar */}
+      {/* Tabla Genérica Reutilizable */}
+      <Table
+        textBuscador="Buscar backup por nombre..."
+        columnas={columnasConfig}
+        datos={backups}
+        cargando={cargando}
+        filtros={
+          <span className="conteo">
+            {backups.length} backup{backups.length !== 1 ? "s" : ""} totales
+          </span>
+        }
+      />
+
+      {/* Modal Reutilizable para la Confirmación Crítica */}
       {confirmarRestaurar && (
-        <div className="confirm-overlay">
-          <div className="confirm-box">
-            <i className="bi bi-exclamation-triangle-fill confirm-icon"></i>
-            <h3>¿Restaurar base de datos?</h3>
-            <p>
-              Esta acción reemplazará todos los datos actuales con los del
-              backup:
+        <Modal
+          titulo={
+            <>
+              <i className="bi bi-exclamation-triangle-fill text-warning me-2"></i>{" "}
+              Confirmar Restauración
+            </>
+          }
+          onClose={() => setConfirmarRestaurar(null)}
+        >
+          <div
+            className="confirm-box-content"
+            style={{ textAlign: "center", padding: "10px" }}
+          >
+            <p style={{ fontSize: "0.95rem", marginBottom: "15px" }}>
+              Esta acción reemplazará permanentemente todos los datos actuales
+              con los del siguiente archivo de backup:
             </p>
-            <p className="confirm-nombre">{confirmarRestaurar}</p>
-            <p className="confirm-advertencia">
-              Esta acción no se puede deshacer.
+            <p
+              className="confirm-nombre"
+              style={{
+                fontWeight: "600",
+                padding: "8px",
+                background: "#f3f4f6",
+                borderRadius: "6px",
+              }}
+            >
+              {confirmarRestaurar}
             </p>
-            <div className="confirm-botones">
+            <p
+              className="confirm-advertencia"
+              style={{ color: "#ef4444", fontWeight: "600", marginTop: "15px" }}
+            >
+              Esta acción no se puede deshacer y cerrará procesos activos.
+            </p>
+
+            <div
+              className="modal-actions-inline"
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: "10px",
+                marginTop: "25px",
+              }}
+            >
               <button
                 className="btn-cancelar"
                 onClick={() => setConfirmarRestaurar(null)}
@@ -209,117 +324,23 @@ export default function Backups() {
               </button>
               <button
                 className="btn-restaurar-confirm"
+                style={{
+                  background: "#f59e0b",
+                  color: "white",
+                  border: "none",
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                }}
                 onClick={() => restaurarBackup(confirmarRestaurar)}
               >
-                Sí, restaurar
+                Sí, restaurar base de datos
               </button>
             </div>
           </div>
-        </div>
+        </Modal>
       )}
-
-      {/* Tabla de backups */}
-      <div className="backups-card">
-        <div className="backups-card-header">
-          <h2 className="backups-card-titulo">
-            <i className="bi bi-archive-fill"></i> Historial de Backups
-          </h2>
-          <span className="backups-conteo">
-            {backups.length} backup{backups.length !== 1 ? "s" : ""}
-          </span>
-        </div>
-
-        {cargando ? (
-          <div className="backups-cargando">
-            <div className="dash-spinner"></div>
-            <p>Cargando backups...</p>
-          </div>
-        ) : backups.length === 0 ? (
-          <div className="backups-vacio">
-            <i className="bi bi-database-slash"></i>
-            <p>No hay backups creados aún</p>
-            <span>Crea tu primer backup con el botón de arriba</span>
-          </div>
-        ) : (
-          <div className="tabla-wrapper">
-            <table className="backups-tabla">
-              <thead>
-                <tr>
-                  <th>
-                    <i className="bi bi-file-earmark-zip"></i> Archivo
-                  </th>
-                  <th>
-                    <i className="bi bi-calendar3"></i> Fecha
-                  </th>
-                  <th>
-                    <i className="bi bi-hdd"></i> Tamaño
-                  </th>
-                  <th>
-                    <i className="bi bi-shield-check"></i> Estado
-                  </th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {backups.map((backup, i) => (
-                  <tr key={i}>
-                    <td className="backup-nombre">
-                      <i className="bi bi-file-earmark-lock2-fill"></i>
-                      {backup.nombre}
-                    </td>
-                    <td className="backup-fecha">
-                      {formatearFecha(backup.fecha)}
-                    </td>
-                    <td className="backup-tamanio">
-                      {formatearTamanio(backup.tamanio)}
-                    </td>
-                    <td>
-                      <span className="badge-cifrado">
-                        <i className="bi bi-lock-fill"></i> Cifrado
-                      </span>
-                    </td>
-                    <td>
-                      <div className="backup-acciones">
-                        <button
-                          className="btn-descargar"
-                          onClick={() => descargarBackup(backup.nombre)}
-                          title="Descargar"
-                        >
-                          <i className="bi bi-download"></i>
-                        </button>
-                        <button
-                          className="btn-restaurar"
-                          onClick={() => setConfirmarRestaurar(backup.nombre)}
-                          disabled={restaurando === backup.nombre}
-                          title="Restaurar"
-                        >
-                          {restaurando === backup.nombre ? (
-                            <span className="spinner-small"></span>
-                          ) : (
-                            <i className="bi bi-arrow-counterclockwise"></i>
-                          )}
-                        </button>
-                        <button
-                          className="btn-eliminar"
-                          onClick={() => eliminarBackup(backup.nombre)}
-                          disabled={eliminando === backup.nombre}
-                          title="Eliminar"
-                        >
-                          {eliminando === backup.nombre ? (
-                            <span className="spinner-small"></span>
-                          ) : (
-                            <i className="bi bi-trash3-fill"></i>
-                          )}
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
