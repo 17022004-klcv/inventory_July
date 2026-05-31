@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import "./Productos.css";
+import Table from "../../components/Table/Table";
+import Modal from "../../components/Modal/Modal";
 
 const API = import.meta.env.VITE_API_URL;
+
 export default function Productos() {
   const [productos, setProductos] = useState([]);
   const [categorias, setCategorias] = useState([]);
@@ -9,7 +12,7 @@ export default function Productos() {
   const [cargando, setCargando] = useState(true);
   const [modalAbierto, setModalAbierto] = useState(false);
   const [modoEditar, setModoEditar] = useState(false);
-  const [busqueda, setBusqueda] = useState("");
+  const [modoVer, setModoVer] = useState(false); // Estado para la vista de detalles
   const [error, setError] = useState("");
   const [exito, setExito] = useState("");
   const [form, setForm] = useState({
@@ -35,7 +38,6 @@ export default function Productos() {
     try {
       const res = await fetch(`${API}/productos`);
       const data = await res.json();
-      console.log("Productos cargados:", data);
       setProductos(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error al cargar productos:", err);
@@ -50,11 +52,9 @@ export default function Productos() {
     try {
       const res = await fetch(`${API}/categorias`);
       const data = await res.json();
-      console.log("Categorías cargadas:", data);
       setCategorias(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error al cargar categorías:", err);
-      setError("No se pudieron cargar las categorías");
       setCategorias([]);
     }
   };
@@ -63,11 +63,9 @@ export default function Productos() {
     try {
       const res = await fetch(`${API}/proveedores`);
       const data = await res.json();
-      console.log("Proveedores cargados:", data);
       setProveedores(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error al cargar proveedores:", err);
-      setError("No se pudieron cargar los proveedores");
       setProveedores([]);
     }
   };
@@ -82,8 +80,10 @@ export default function Productos() {
       precio_final: "",
       id_proveedor: "",
       activo: true,
+      codigo_barras: "",
     });
     setModoEditar(false);
+    setModoVer(false);
     setModalAbierto(true);
     setError("");
   };
@@ -102,6 +102,26 @@ export default function Productos() {
       codigo_barras: p.codigo_barras || "",
     });
     setModoEditar(true);
+    setModoVer(false);
+    setModalAbierto(true);
+    setError("");
+  };
+
+  const abrirModalVer = (p) => {
+    if (!p) return;
+    setForm({
+      id_producto: p.id_producto || "",
+      nombre_producto: p.nombre_producto || "",
+      id_categoria: (p.id_categoria || "").toString(),
+      stock: p.stock || "",
+      precio_unitario: p.precio_unitario || "",
+      precio_final: p.precio_final || "",
+      id_proveedor: (p.id_proveedor || "").toString(),
+      activo: p.activo !== undefined ? p.activo : true,
+      codigo_barras: p.codigo_barras || "",
+    });
+    setModoVer(true);
+    setModoEditar(false);
     setModalAbierto(true);
     setError("");
   };
@@ -130,7 +150,7 @@ export default function Productos() {
       !form.precio_final.toString().trim() ||
       !form.id_proveedor.toString().trim()
     ) {
-      setError("Todos los campos son obligatorios");
+      setError("Todos los campos marcados con * son obligatorios");
       return;
     }
 
@@ -140,7 +160,6 @@ export default function Productos() {
         : `${API}/productos`;
       const method = modoEditar ? "PUT" : "POST";
 
-      // Convertir tipos de datos correctamente
       const datosEnvio = {
         nombre_producto: form.nombre_producto,
         id_categoria: parseInt(form.id_categoria),
@@ -160,6 +179,7 @@ export default function Productos() {
         },
         body: JSON.stringify(datosEnvio),
       });
+
       if (res.ok) {
         cerrarModal();
         cargarProductos();
@@ -170,9 +190,6 @@ export default function Productos() {
         );
       } else {
         const data = await res.json();
-        console.log("Error response:", data);
-
-        // Mostrar errores de validación si existen
         if (data.errors) {
           const errorMessages = Object.values(data.errors).flat().join(", ");
           setError(`Errores: ${errorMessages}`);
@@ -183,7 +200,7 @@ export default function Productos() {
         }
       }
     } catch (err) {
-      console.log("Error:", err);
+      console.error("Error:", err);
       setError("No se pudo conectar con el servidor.");
     }
   };
@@ -203,18 +220,81 @@ export default function Productos() {
     }
   };
 
-  const productosFiltrados =
-    productos && Array.isArray(productos)
-      ? productos.filter((p) => {
-          if (!p) return false;
-          const nombre = (p.nombre_producto || "").toLowerCase();
-          const categoria = (p.categoria?.nombre_categoria || "").toLowerCase();
-          const busquedaLower = busqueda.toLowerCase();
-          return (
-            nombre.includes(busquedaLower) || categoria.includes(busquedaLower)
-          );
-        })
-      : [];
+  // Configuración de las columnas para <Table />
+  const columnasConfig = [
+    { header: "#", render: (p, index) => index + 1 },
+    {
+      header: "Nombre",
+      searchValue: (p) => p.nombre_producto,
+      render: (p) => p.nombre_producto || "-",
+    },
+    {
+      header: "Categoría",
+      searchValue: (p) => p.categoria?.nombre_categoria,
+      render: (p) => p.categoria?.nombre_categoria || "-",
+    },
+    { header: "Stock", render: (p) => p.stock || 0 },
+    {
+      header: "Precio Final",
+      render: (p) => `$${parseFloat(p.precio_final || 0).toFixed(2)}`,
+    },
+    {
+      header: "Estado",
+      render: (p) => (
+        <span className={p.activo ? "badge-activo" : "badge-inactivo"}>
+          {p.activo ? "Activo" : "Inactivo"}
+        </span>
+      ),
+    },
+    {
+      header: "Acciones",
+      render: (p) => (
+        <div className="acciones">
+          <button
+            className="btn-icon btn-ver"
+            title="Ver detalles"
+            onClick={() => abrirModalVer(p)}
+          >
+            <i className="bi bi-eye"></i>
+          </button>
+          <button
+            className="btn-icon btn-editar"
+            title="Editar"
+            onClick={() => abrirModalEditar(p)}
+          >
+            <i className="bi bi-pencil"></i>
+          </button>
+          <button
+            className="btn-icon btn-eliminar"
+            title="Eliminar"
+            onClick={() => eliminar(p.id_producto)}
+          >
+            <i className="bi bi-trash"></i>
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const obtenerTituloModal = () => {
+    if (modoVer)
+      return (
+        <>
+          <i className="bi bi-eye me-2"></i> Detalles del Producto
+        </>
+      );
+    if (modoEditar)
+      return (
+        <>
+          <i className="bi bi-pencil me-2"></i> Editar Producto
+        </>
+      );
+    return (
+      <>
+        <i className="bi bi-plus-circle me-2"></i> Nuevo Producto
+      </>
+    );
+  };
 
   return (
     <div className="pro__page">
@@ -225,230 +305,167 @@ export default function Productos() {
           <p className="pro__subtitulo">Gestiona los productos del sistema</p>
         </div>
         <button className="btn-primario" onClick={abrirModalNuevo}>
-          + Nuevo Producto
+          <i className="bi bi-plus-lg"></i> Nuevo Producto
         </button>
       </div>
 
       {/* Notificaciones */}
-      {exito && <div className="exito-box">✓ {exito}</div>}
-      {error && !modalAbierto && <div className="error-box">⚠ {error}</div>}
-
-      {/* Buscador y tabla */}
-      <div className="card">
-        <div className="toolbar-row">
-          <input
-            className="buscador"
-            placeholder="🔍 Buscar por nombre..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-          <span className="conteo">{productosFiltrados.length} registros</span>
+      {exito && (
+        <div className="exito-box">
+          <i className="bi bi-check-circle-fill"></i> {exito}
         </div>
+      )}
+      {error && !modalAbierto && (
+        <div className="error-box">
+          <i className="bi bi-exclamation-triangle-fill"></i> {error}
+        </div>
+      )}
 
-        {cargando ? (
-          <div className="cargando">Cargando productos...</div>
-        ) : (
-          <div className="table-wrapper">
-            <table className="tabla-productos">
-              <thead>
-                <tr>
-                  {[
-                    "#",
-                    "Nombre",
-                    "Categoría",
-                    "Stock",
-                    "Precio Final",
-                    "Estado",
-                    "Acciones",
-                  ].map((h) => (
-                    <th key={h}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {productosFiltrados.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="sin-datos">
-                      No hay productos registrados.
-                    </td>
-                  </tr>
-                ) : (
-                  productosFiltrados.map((p, i) => (
-                    <tr key={p?.id_producto || i} className="fila-producto">
-                      <td className="celda">{i + 1}</td>
-                      <td>{p?.nombre_producto || "-"}</td>
-                      <td>{p?.categoria?.nombre_categoria || "-"}</td>
-                      <td className="celda">{p?.stock || 0}</td>
-                      <td className="celda">
-                        ${parseFloat(p?.precio_final || 0).toFixed(2)}
-                      </td>
-                      <td className="celda">
-                        <span
-                          className={
-                            p?.activo ? "badge-activo" : "badge-inactivo"
-                          }
-                        >
-                          {p?.activo ? "Activo" : "Inactivo"}
-                        </span>
-                      </td>
-                      <td className="celda">
-                        <div className="acciones">
-                          <button
-                            className="btn-editar"
-                            onClick={() => abrirModalEditar(p)}
-                          >
-                            ✏ Editar
-                          </button>
-                          <button
-                            className="btn-eliminar"
-                            onClick={() => eliminar(p?.id_producto)}
-                          >
-                            🗑 Eliminar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {/* Tabla Genérica Reutilizable */}
+      <Table
+        textBuscador="Buscar por nombre o categoría..."
+        columnas={columnasConfig}
+        datos={productos}
+        cargando={cargando}
+        filtros={<span className="conteo">{productos.length} totales</span>}
+      />
 
-      {/* Modal */}
+      {/* Modal Genérico Reutilizable */}
       {modalAbierto && (
-        <div className="modal-overlay" onClick={cerrarModal}>
-          <div className="modal-contenido" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-titulo">
-                {modoEditar ? "✏ Editar Producto" : "+ Nuevo Producto"}
-              </h2>
-              <button className="btn-cerrar" onClick={cerrarModal}>
-                ✕
-              </button>
+        <Modal titulo={obtenerTituloModal()} onClose={cerrarModal}>
+          {error && (
+            <div className="error-box">
+              <i className="bi bi-exclamation-triangle-fill"></i> {error}
+            </div>
+          )}
+
+          <div className="form-grid">
+            {[
+              {
+                name: "nombre_producto",
+                label: "Nombre *",
+                placeholder: "Nombre del producto",
+              },
+              {
+                name: "codigo_barras",
+                label: "Código de Barras",
+                placeholder: "Ej: 7501234567890",
+              },
+              {
+                name: "stock",
+                label: "Stock *",
+                placeholder: "Cantidad en stock",
+              },
+              {
+                name: "precio_unitario",
+                label: "Precio Unitario *",
+                placeholder: "0.00",
+              },
+              {
+                name: "precio_final",
+                label: "Precio Final *",
+                placeholder: "0.00",
+              },
+            ].map((field) => (
+              <div key={field.name} className="form-group">
+                <label className="form-label">{field.label}</label>
+                <input
+                  className="form-input"
+                  name={field.name}
+                  placeholder={field.placeholder}
+                  value={form[field.name] || ""}
+                  onChange={handleChange}
+                  disabled={modoVer} // Deshabilitado en vista de detalles
+                />
+              </div>
+            ))}
+
+            {/* Selector de Categoría */}
+            <div className="form-group">
+              <label className="form-label">Categoría *</label>
+              <select
+                className="form-input"
+                name="id_categoria"
+                value={form.id_categoria}
+                onChange={handleChange}
+                disabled={modoVer}
+              >
+                <option value="">-- Selecciona una categoría --</option>
+                {categorias.map((cat) =>
+                  cat ? (
+                    <option
+                      key={cat.id_categoria}
+                      value={cat.id_categoria.toString()}
+                    >
+                      {cat.nombre_categoria}
+                    </option>
+                  ) : null,
+                )}
+              </select>
             </div>
 
-            {error && <div className="error-box">⚠ {error}</div>}
-
-            <div className="form-grid">
-              {[
-                {
-                  name: "nombre_producto",
-                  label: "Nombre *",
-                  placeholder: "Nombre del producto",
-                },
-                {
-                  name: "codigo_barras",
-                  label: "Código de Barras",
-                  placeholder: "Ej: 7501234567890",
-                },
-
-                {
-                  name: "stock",
-                  label: "Stock *",
-                  placeholder: "Cantidad en stock",
-                },
-                {
-                  name: "precio_unitario",
-                  label: "Precio Unitario *",
-                  placeholder: "0.00",
-                },
-                {
-                  name: "precio_final",
-                  label: "Precio Final *",
-                  placeholder: "0.00",
-                },
-              ].map((field) => (
-                <div key={field.name} className="form-group">
-                  <label className="form-label">{field.label}</label>
-                  <input
-                    className="form-input"
-                    name={field.name}
-                    placeholder={field.placeholder}
-                    value={form[field.name] || ""}
-                    onChange={handleChange}
-                  />
-                </div>
-              ))}
-
-              <div className="form-group">
-                <label className="form-label">Categoría *</label>
-                <select
-                  className="form-input"
-                  name="id_categoria"
-                  value={form.id_categoria}
-                  onChange={handleChange}
-                >
-                  <option value="">-- Selecciona una categoría --</option>
-                  {categorias &&
-                    Array.isArray(categorias) &&
-                    categorias.map((cat) =>
-                      cat ? (
-                        <option
-                          key={cat?.id_categoria}
-                          value={(cat?.id_categoria || "").toString()}
-                        >
-                          {cat?.nombre_categoria || "Sin nombre"}
-                        </option>
-                      ) : null,
-                    )}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Proveedor *</label>
-                <select
-                  className="form-input"
-                  name="id_proveedor"
-                  value={form.id_proveedor}
-                  onChange={handleChange}
-                >
-                  <option value="">-- Selecciona un proveedor --</option>
-                  {proveedores &&
-                    Array.isArray(proveedores) &&
-                    proveedores.map((prov) =>
-                      prov ? (
-                        <option
-                          key={prov?.id_proveedor}
-                          value={(prov?.id_proveedor || "").toString()}
-                        >
-                          {prov?.nombre_proveedor || "Sin nombre"}
-                        </option>
-                      ) : null,
-                    )}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">Estado</label>
-                <select
-                  className="form-input"
-                  name="activo"
-                  value={form.activo ? "true" : "false"}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      activo: e.target.value === "true",
-                    }))
-                  }
-                >
-                  <option value="true">Activo</option>
-                  <option value="false">Inactivo</option>
-                </select>
-              </div>
+            {/* Selector de Proveedor */}
+            <div className="form-group">
+              <label className="form-label">Proveedor *</label>
+              <select
+                className="form-input"
+                name="id_proveedor"
+                value={form.id_proveedor}
+                onChange={handleChange}
+                disabled={modoVer}
+              >
+                <option value="">-- Selecciona un proveedor --</option>
+                {proveedores.map((prov) =>
+                  prov ? (
+                    <option
+                      key={prov.id_proveedor}
+                      value={prov.id_proveedor.toString()}
+                    >
+                      {prov.nombre_proveedor}
+                    </option>
+                  ) : null,
+                )}
+              </select>
             </div>
 
-            <div className="modal-footer">
-              <button className="btn-cancelar" onClick={cerrarModal}>
-                Cancelar
-              </button>
+            {/* Selector de Estado */}
+            <div className="form-group">
+              <label className="form-label">Estado</label>
+              <select
+                className="form-input"
+                name="activo"
+                value={form.activo ? "true" : "false"}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    activo: e.target.value === "true",
+                  }))
+                }
+                disabled={modoVer}
+              >
+                <option value="true">Activo</option>
+                <option value="false">Inactivo</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Footer de acción interna del modal (Oculto en modo ver) */}
+          {!modoVer && (
+            <div
+              className="modal-actions-inline"
+              style={{
+                display: "flex",
+                justifyContent: "flex-end",
+                marginTop: "20px",
+              }}
+            >
               <button className="btn-primario" onClick={guardar}>
+                <i className="bi bi-save"></i>{" "}
                 {modoEditar ? "Actualizar" : "Guardar"}
               </button>
             </div>
-          </div>
-        </div>
+          )}
+        </Modal>
       )}
     </div>
   );
