@@ -50,11 +50,22 @@ export default function Backups() {
   const crearBackup = async () => {
     setCreando(true);
     setError("");
+    setExito("");
     try {
       const res = await fetch(`${API}/backup/crear`, { method: "POST" });
+
+      // 🌟 Validar si la respuesta es JSON antes de procesar
+      const contentType = res.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        const textoError = await res.text();
+        throw new Error(
+          "El servidor no devolvió JSON. Posible error de configuración en el Backend.",
+        );
+      }
+
       const data = await res.json();
       if (res.ok) {
-        const msg = `Backup creado: ${data.archivo}\nTablas: ${data.cantidad_tablas}`;
+        const msg = `Backup creado con éxito: ${data.archivo}`;
         mostrarExito(msg);
         cargarBackups();
       } else {
@@ -62,7 +73,7 @@ export default function Backups() {
       }
     } catch (err) {
       console.error("Error creando backup:", err);
-      mostrarError(`No se pudo conectar con el servidor: ${err.message}`);
+      mostrarError(`Error en el sistema: ${err.message}`);
     } finally {
       setCreando(false);
     }
