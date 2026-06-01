@@ -27,16 +27,28 @@ class BackupController extends Controller
             $nombreArchivo = "backup_{$fecha}.sql";
             $rutaTemporal  = storage_path("app/backups/{$nombreArchivo}");
 
+            // Crear directorio si no existe
+            if (!is_dir(storage_path('app/backups'))) {
+                mkdir(storage_path('app/backups'), 0755, true);
+            }
+
             // Setear contraseña para pg_dump
             putenv("PGPASSWORD={$dbPass}");
 
-            // Ejecutar pg_dump
+            // Ejecutar pg_dump - esto incluye TODO: esquema, datos, secuencias, etc.
             $comando = "\"{$pgDump}\" -h {$dbHost} -p {$dbPort} -U {$dbUser} -d {$dbName} -f \"{$rutaTemporal}\" 2>&1";
             exec($comando, $output, $codigoRetorno);
 
             if ($codigoRetorno !== 0) {
                 return response()->json([
                     'error' => 'Error al generar el backup: ' . implode("\n", $output)
+                ], 500);
+            }
+
+            // Verificar que el archivo se creó correctamente
+            if (!file_exists($rutaTemporal) || filesize($rutaTemporal) === 0) {
+                return response()->json([
+                    'error' => 'El archivo de backup está vacío o no se creó correctamente'
                 ], 500);
             }
 
@@ -53,11 +65,19 @@ class BackupController extends Controller
             // Eliminar archivo temporal sin cifrar
             unlink($rutaTemporal);
 
+            // Obtener lista de tablas para el log
+            $tablas = \Illuminate\Support\Facades\DB::select("
+                SELECT tablename FROM pg_tables WHERE schemaname = 'public'
+            ");
+            $nombresTablas = array_map(fn($t) => $t->tablename, $tablas);
+
             return response()->json([
                 'mensaje'  => 'Backup creado correctamente',
                 'archivo'  => $nombreCifrado,
                 'fecha'    => $fecha,
-                'tamanio'  => Storage::size("backups/{$nombreCifrado}")
+                'tamanio'  => Storage::size("backups/{$nombreCifrado}"),
+                'tablas_incluidas' => $nombresTablas,
+                'cantidad_tablas' => count($nombresTablas)
             ]);
 
         } catch (\Exception $e) {
@@ -173,10 +193,26 @@ public function restaurar($nombre)
         
         $this->corregirSecuenciasPostgres();
 
+        // ==========================================================
+        // EJECUTAR MIGRACIONES FALTANTES
+        // ==========================================================
+        // Esto asegura que todas las tablas necesarias existan
+        try {
+            \Illuminate\Support\Facades\Artisan::call('migrate', [
+                '--force' => true,
+                '--database' => 'pgsql'
+            ]);
+        } catch (\Exception $migrateError) {
+            // Si las migraciones fallan, lo registramos pero continuamos
+            \Illuminate\Support\Facades\Log::warning('Migraciones parcialmente aplicadas: ' . $migrateError->getMessage());
+        }
+
         // Limpiar cachés de Laravel
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
 
-        return response()->json(['mensaje' => 'Base de datos restaurada y secuencias corregidas con éxito.']);
+        return response()->json([
+            'mensaje' => 'Base de datos restaurada, migraciones ejecutadas y secuencias corregidas con éxito.'
+        ]);
 
     } catch (\Exception $e) {
         return response()->json(['error' => 'Excepción interna: ' . $e->getMessage()], 500);

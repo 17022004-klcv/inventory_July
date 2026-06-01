@@ -21,12 +21,17 @@ export default function Backups() {
 
   const cargarBackups = async () => {
     setCargando(true);
+    setError("");
     try {
       const res = await fetch(`${API}/backup/listar`);
+      if (!res.ok) {
+        throw new Error(`Error ${res.status}: ${res.statusText}`);
+      }
       const data = await res.json();
       setBackups(Array.isArray(data) ? data : []);
-    } catch {
-      setError("No se pudieron cargar los backups");
+    } catch (err) {
+      console.error("Error cargando backups:", err);
+      setError(`No se pudieron cargar los backups: ${err.message}`);
     } finally {
       setCargando(false);
     }
@@ -49,13 +54,15 @@ export default function Backups() {
       const res = await fetch(`${API}/backup/crear`, { method: "POST" });
       const data = await res.json();
       if (res.ok) {
-        mostrarExito(`Backup creado: ${data.archivo}`);
+        const msg = `Backup creado: ${data.archivo}\nTablas: ${data.cantidad_tablas}`;
+        mostrarExito(msg);
         cargarBackups();
       } else {
         mostrarError(data.error || "Error al crear el backup");
       }
-    } catch {
-      mostrarError("No se pudo conectar con el servidor");
+    } catch (err) {
+      console.error("Error creando backup:", err);
+      mostrarError(`No se pudo conectar con el servidor: ${err.message}`);
     } finally {
       setCreando(false);
     }
@@ -75,7 +82,8 @@ export default function Backups() {
       a.download = nombre.replace(".enc", "");
       a.click();
       window.URL.revokeObjectURL(url);
-    } catch {
+    } catch (err) {
+      console.error("Error descargando backup:", err);
       mostrarError("Error al descargar el backup");
     }
   };
@@ -83,18 +91,22 @@ export default function Backups() {
   const restaurarBackup = async (nombre) => {
     setRestaurando(nombre);
     setConfirmarRestaurar(null);
+    setError("");
     try {
       const res = await fetch(`${API}/backup/restaurar/${nombre}`, {
         method: "POST",
       });
       const data = await res.json();
       if (res.ok) {
-        mostrarExito("Base de datos restaurada correctamente");
+        mostrarExito(data.mensaje || "Base de datos restaurada correctamente");
       } else {
-        mostrarError(data.error || "Error al restaurar");
+        const errorMsg = data.error || "Error al restaurar";
+        console.error("Error de restauración:", errorMsg);
+        mostrarError(errorMsg);
       }
-    } catch {
-      mostrarError("No se pudo conectar con el servidor");
+    } catch (err) {
+      console.error("Error conectando:", err);
+      mostrarError(`No se pudo conectar con el servidor: ${err.message}`);
     } finally {
       setRestaurando(null);
     }
@@ -113,8 +125,9 @@ export default function Backups() {
       } else {
         mostrarError(data.error || "Error al eliminar");
       }
-    } catch {
-      mostrarError("No se pudo conectar con el servidor");
+    } catch (err) {
+      console.error("Error eliminando backup:", err);
+      mostrarError("Error al eliminar el backup");
     } finally {
       setEliminando(null);
     }

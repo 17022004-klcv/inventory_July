@@ -11,8 +11,8 @@ import Historial from "../Historial/Historial";
 import POS from "../Pos/Pos";
 import DashboardHome from "./DashboardHome";
 import Backups from "../Backups/Backups";
+import Perfil from "../Perfil/Perfil";
 
-// Páginas placeholder para las demás secciones
 const Placeholder = ({ nombre }) => (
   <div className="placeholder-container">
     <div className="placeholder-icon">🚧</div>
@@ -21,7 +21,7 @@ const Placeholder = ({ nombre }) => (
   </div>
 );
 
-export default function Dashboard({ onLogout, usuario }) {
+export default function Dashboard({ onLogout, usuario, onActualizarUsuario }) {
   const [paginaActual, setPaginaActual] = useState("dashboard");
   const rol = usuario?.id_tipousuario;
 
@@ -33,7 +33,7 @@ export default function Dashboard({ onLogout, usuario }) {
         ) : (
           <Placeholder nombre="No autorizado" />
         );
-        <DashboardHome usuario={usuario} />;
+
       case "proveedores":
         return rol === 1 ? (
           <Proveedores />
@@ -85,6 +85,12 @@ export default function Dashboard({ onLogout, usuario }) {
 
       case "backups":
         return rol === 1 ? <Backups /> : <Placeholder nombre="No autorizado" />;
+
+      case "perfil":
+        return (
+          <Perfil usuario={usuario} onActualizarUsuario={onActualizarUsuario} />
+        );
+
       default:
         return <Placeholder nombre="Página no encontrada" />;
     }

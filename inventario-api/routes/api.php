@@ -59,3 +59,7 @@ Route::get('backup/listar', [BackupController::class, 'listar']);
 Route::get('backup/descargar/{nombre}', [BackupController::class, 'descargar']);
 Route::post('backup/restaurar/{nombre}', [BackupController::class, 'restaurar']);
 Route::delete('backup/eliminar/{nombre}', [BackupController::class, 'eliminar']);
+
+use App\Http\Controllers\PerfilController;
+Route::get('/perfil/{id}', [PerfilController::class, 'show']);
+Route::put('/perfil/{id}', [PerfilController::class, 'update']);

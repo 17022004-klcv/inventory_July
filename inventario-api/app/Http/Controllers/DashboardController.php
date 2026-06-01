@@ -88,12 +88,13 @@ class DashboardController extends Controller
                    c.telefono_cliente,
                    c.correo_cliente,
                    COUNT(v.id_venta) as total_compras,
-                   SUM(v.total_venta) as total_gastado
+                   COALESCE(SUM(v.total_venta), 0) as total_gastado
             FROM clientes c
-            INNER JOIN ventas v ON c.id_cliente = v.id_cliente
+            LEFT JOIN ventas v ON c.id_cliente = v.id_cliente AND v.id_cliente IS NOT NULL
+            WHERE c.activo = true
             GROUP BY c.id_cliente, c.nombre_cliente, c.apellido_cliente,
                      c.telefono_cliente, c.correo_cliente
-            ORDER BY total_compras DESC
+            ORDER BY total_compras DESC, c.nombre_cliente ASC
             LIMIT 10
         ");
 
@@ -113,27 +114,32 @@ class DashboardController extends Controller
     }
 
     // GET api/dashboard/vencimientos
-    public function vencimientos()
-    {
-        $hoy = now();
+   public function vencimientos()
+{
+    try {
+        $hoy = now()->format('Y-m-d');
+        $proximaSemana = now()->addDays(7)->format('Y-m-d');
 
-        $criticos = Vencimiento::with('producto')
-            ->whereHas('producto', fn($q) => $q->where('activo', true))
-            ->whereDate('fecha_vencimiento', '>=', $hoy)
-            ->whereDate('fecha_vencimiento', '<=', $hoy->copy()->addDays(7))
-            ->orderBy('fecha_vencimiento')
+        // 🌟 Forzamos las tablas y columnas en MAYÚSCULAS para cumplir con PostgreSQL
+        $vencimientos = DB::table('VENCIMIENTO')
+            ->join('PRODUCTOS', 'VENCIMIENTO.id_producto', '=', 'PRODUCTOS.id_producto')
+            ->select(
+                'VENCIMIENTO.id_vencimiento as id_vencimiento',
+                'VENCIMIENTO.lote',
+                'VENCIMIENTO.fecha_vencimiento as fecha_vencimiento',
+                'PRODUCTOS.nombre_producto'
+            )
+            ->whereBetween('VENCIMIENTO.fecha_vencimiento', [$hoy, $proximaSemana])
+            ->where('PRODUCTOS.activo', true)
+            ->orderBy('VENCIMIENTO.fecha_vencimiento', 'asc')
             ->get();
 
-        $advertencias = Vencimiento::with('producto')
-            ->whereHas('producto', fn($q) => $q->where('activo', true))
-            ->whereDate('fecha_vencimiento', '>', $hoy->copy()->addDays(7))
-            ->whereDate('fecha_vencimiento', '<=', $hoy->copy()->addDays(30))
-            ->orderBy('fecha_vencimiento')
-            ->get();
-
-        return response()->json([
-            'criticos'     => $criticos,
-            'advertencias' => $advertencias,
-        ]);
+        return response()->json($vencimientos);
+    } catch (\Exception $e) {
+        // 🚨 Si algo falla, devolvemos un array vacío para no congelar tu Frontend (Historial.jsx)
+        // Pero registramos el error real en los logs de Laravel para revisarlo
+        \Log::error("Error en vencimientos: " . $e->getMessage());
+        return response()->json([]);
     }
+}
 }

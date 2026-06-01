@@ -23,7 +23,6 @@ return new class extends Migration
         $table->decimal('precio_final', 8, 2);
         $table->unsignedBigInteger('id_proveedor');
         $table->boolean('activo')->default(true);
-        $table->timestamp('updated_at')->nullable();
 
         $table->foreign('id_categoria')->references('id_categoria')->on('categorias');
         $table->foreign('id_proveedor')->references('id_proveedor')->on('proveedores');

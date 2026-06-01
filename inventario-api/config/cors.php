@@ -4,7 +4,11 @@ return [
     'allowed_methods' => ['*'],
     'allowed_origins' => [
     'http://localhost:5173',
-    'http://127.0.0.1:5173'
+    'http://127.0.0.1:5173',
+    'http://192.168.1.5:5173',
+    'http://192.168.1.5:5174',
+    'https://192.168.1.5:5173',
+    'https://192.168.1.5:5174',
 ],
     'allowed_headers' => ['*'],
     'exposed_headers' => [],

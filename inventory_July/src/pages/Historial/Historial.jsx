@@ -4,7 +4,7 @@ import StatsRow from "../../components/StatsRow/StatsRow";
 import Table from "../../components/Table/Table";
 import Modal from "../../components/Modal/Modal";
 
-const API = import.meta.env.VITE_API_URL
+const API = import.meta.env.VITE_API_URL;
 
 const COLORES_ACCION = {
   Entrada: { bg: "#dcfce7", color: "#16a34a", label: "Entrada" },
@@ -43,29 +43,33 @@ export default function Historial() {
     setCargando(true);
     try {
       const res = await fetch(`${API}/historial`);
+      if (!res.ok) {
+        throw new Error("Error en el servidor");
+      }
       const data = await res.json();
-      setLogs(data);
-    } catch {
-      setLogs([]);
+      setLogs(Array.isArray(data) ? data : []); // 🌟 Forzamos que sea un array
+    } catch (err) {
+      console.error("Error al cargar los logs:", err);
+      setLogs([]); // 🌟 Si falla el servidor, se queda vacío y la app no se muere
     } finally {
       setCargando(false);
     }
   };
 
-  const logsFiltrados = logs.filter((log) => {
-    const coincideBusqueda =
-      log.nombre_producto?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      false ||
-      log.tipo_movimiento?.toLowerCase().includes(busqueda.toLowerCase()) ||
-      false ||
-      log.cantidad?.toString().includes(busqueda) ||
-      false;
+  // 🌟 Cambia tu línea actual por esta que verifica si es un arreglo antes de filtrar:
+  const logsFiltrados = Array.isArray(logs)
+    ? logs.filter((log) => {
+        const coincideBusqueda =
+          log.nombre_producto?.toLowerCase().includes(busqueda.toLowerCase()) ||
+          log.tipo_movimiento?.toLowerCase().includes(busqueda.toLowerCase()) ||
+          log.cantidad?.toString().includes(busqueda);
 
-    const coincideAccion =
-      filtroAccion === "Todas" || log.tipo_movimiento === filtroAccion;
+        const coincideAccion =
+          filtroAccion === "Todas" || log.tipo_movimiento === filtroAccion;
 
-    return coincideBusqueda && coincideAccion;
-  });
+        return coincideBusqueda && coincideAccion;
+      })
+    : []; // Si no es array, devuelve vacíos
 
   const formatFecha = (fecha) => {
     if (!fecha) return "—";

@@ -8,7 +8,11 @@ function App() {
   return (
     <div>
       {usuario ? (
-        <Dashboard onLogout={() => setUsuario(null)} usuario={usuario} />
+        <Dashboard
+          onLogout={() => setUsuario(null)}
+          usuario={usuario}
+          onActualizarUsuario={setUsuario}
+        />
       ) : (
         <Login onLogin={(usuarioData) => setUsuario(usuarioData)} />
       )}

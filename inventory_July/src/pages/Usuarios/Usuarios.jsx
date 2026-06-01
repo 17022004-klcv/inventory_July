@@ -38,10 +38,15 @@ export default function Usuarios() {
     setCargando(true);
     try {
       const res = await fetch(`${API}/usuarios`);
+      if (!res.ok) {
+        throw new Error(`Error ${res.status}: ${res.statusText}`);
+      }
       const data = await res.json();
       setUsuarios(data);
-    } catch {
-      setError("No se pudo cargar los usuarios.");
+      setError("");
+    } catch (err) {
+      console.error("Error cargando usuarios:", err);
+      setError(`No se pudo cargar los usuarios: ${err.message}`);
     } finally {
       setCargando(false);
     }
@@ -133,11 +138,20 @@ export default function Usuarios() {
             : "Usuario creado correctamente.",
         );
       } else {
-        const data = await res.json();
-        setError(data.message || "Error al guardar el usuario.");
+        try {
+          const data = await res.json();
+          setError(
+            data.error || data.message || "Error al guardar el usuario.",
+          );
+          console.error("Error response:", data);
+        } catch (e) {
+          setError(`Error ${res.status}: ${res.statusText}`);
+          console.error("Error parsing response:", e);
+        }
       }
-    } catch {
-      setError("No se pudo conectar con el servidor.");
+    } catch (err) {
+      setError(`No se pudo conectar con el servidor: ${err.message}`);
+      console.error("Network error:", err);
     }
   };
 

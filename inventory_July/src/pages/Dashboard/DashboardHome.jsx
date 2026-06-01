@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-// Cambiar el import
 import {
   BarChart,
   Bar,
@@ -42,16 +41,35 @@ export default function DashboardHome({ usuario }) {
         fetch(`${API}/dashboard/stock-bajo`),
         fetch(`${API}/dashboard/vencimientos`),
       ]);
-      const [statsData, clientesData, stockData, vencData] = await Promise.all([
-        statsRes.json(),
-        clientesRes.json(),
-        stockRes.json(),
-        vencRes.json(),
-      ]);
+
+      // Loguear estado de respuestas
+      console.log("Stats response status:", statsRes.status);
+      console.log("Clientes response status:", clientesRes.status);
+      console.log("Stock response status:", stockRes.status);
+      console.log("Vencimientos response status:", vencRes.status);
+
+      const statsData = statsRes.ok ? await statsRes.json() : {};
+      const clientesData = clientesRes.ok ? await clientesRes.json() : [];
+      const stockData = stockRes.ok ? await stockRes.json() : [];
+      const vencData = vencRes.ok
+        ? await vencRes.json()
+        : { criticos: [], advertencias: [] };
+
+      console.log("Stats data:", statsData);
+      console.log("Clientes data:", clientesData);
+      console.log("Stock data:", stockData);
+      console.log("Vencimientos data:", vencData);
+
       setStats(statsData);
       setClientesFrecuentes(Array.isArray(clientesData) ? clientesData : []);
       setStockBajo(Array.isArray(stockData) ? stockData : []);
-      setVencimientos(vencData);
+
+      // 🌟 CAMBIO AQUÍ: Formatear correctamente si viene como array vacío []
+      if (!vencData || Array.isArray(vencData) || !vencData.criticos) {
+        setVencimientos({ criticos: [], advertencias: [] });
+      } else {
+        setVencimientos(vencData);
+      }
     } catch (err) {
       console.error("Error cargando dashboard:", err);
     } finally {
@@ -72,9 +90,9 @@ export default function DashboardHome({ usuario }) {
   };
 
   const totalAlertas =
-    stockBajo.length +
-    vencimientos.criticos.length +
-    vencimientos.advertencias.length;
+    (stockBajo?.length || 0) +
+    (vencimientos?.criticos?.length || 0) +
+    (vencimientos?.advertencias?.length || 0);
 
   if (cargando) {
     return (
@@ -92,10 +110,11 @@ export default function DashboardHome({ usuario }) {
         <div>
           <h1 className="dash-titulo">Dashboard</h1>
           <p className="dash-subtitulo">
-            Bienvenido, {usuario?.nombre_usuario || usuario?.username} 👋
+            Bienvenido, {usuario?.nombre_usuario || usuario?.username}
           </p>
         </div>
         <span className="dash-fecha">
+          <i className="bi bi-calendar3 me-2"> </i>
           {new Date().toLocaleDateString("es-SV", {
             weekday: "long",
             year: "numeric",
@@ -151,7 +170,7 @@ export default function DashboardHome({ usuario }) {
       {totalAlertas > 0 && (
         <div className="dash-alertas">
           <h2 className="dash-seccion-titulo">
-            <i className="bi bi-bell-fill"></i> Alertas
+            <i className="bi bi-bell-fill"></i> Alertas del Sistema
             <span className="badge-alerta">{totalAlertas}</span>
           </h2>
           <div className="alertas-lista">
@@ -193,7 +212,7 @@ export default function DashboardHome({ usuario }) {
             ))}
             {stockBajo.map((p) => (
               <div key={p.id_producto} className="alerta-item alerta-stock">
-                <i className="bi bi-box-seam alerta-icono"></i>
+                <i className="bi bi-box-seam-fill alerta-icono"></i>
                 <div>
                   <p className="alerta-titulo">{p.nombre_producto}</p>
                   <p className="alerta-sub">
@@ -210,7 +229,7 @@ export default function DashboardHome({ usuario }) {
       <div className="dash-card">
         <div className="dash-card-header">
           <h2 className="dash-seccion-titulo">
-            <i className="bi bi-bar-chart-fill"></i> Ventas
+            <i className="bi bi-bar-chart-fill"></i> Rendimiento de Ventas
           </h2>{" "}
           <div className="periodo-tabs">
             {["semana", "mes", "anio"].map((p) => (
@@ -226,12 +245,15 @@ export default function DashboardHome({ usuario }) {
         </div>
 
         {ventas.length === 0 ? (
-          <div className="dash-vacio">No hay ventas en este período</div>
+          <div className="dash-vacio">
+            No hay ventas registradas en este período
+          </div>
         ) : (
           <ResponsiveContainer width="100%" height={280}>
             <BarChart
               data={ventas}
               margin={{ top: 10, right: 20, left: 0, bottom: 0 }}
+              barCategoryGap="20%"
             >
               <CartesianGrid
                 strokeDasharray="3 3"
@@ -241,10 +263,14 @@ export default function DashboardHome({ usuario }) {
               <XAxis
                 dataKey="periodo"
                 tick={{ fontSize: 12, fill: "#9ca3af" }}
+                tickLine={false}
+                axisLine={{ stroke: "#e5e7eb" }}
               />
               <YAxis
                 tick={{ fontSize: 12, fill: "#9ca3af" }}
                 tickFormatter={(v) => `$${v}`}
+                tickLine={false}
+                axisLine={false}
               />
               <Tooltip
                 formatter={(value) => [
@@ -255,10 +281,18 @@ export default function DashboardHome({ usuario }) {
                   borderRadius: "8px",
                   border: "1px solid #e5e7eb",
                   fontSize: "0.85rem",
+                  boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.05)",
                 }}
-                cursor={{ fill: "#f3f4f6" }}
+                cursor={{
+                  fill: "#f8fafc",
+                }}
               />
-              <Bar dataKey="total" fill="#6366f1" radius={[6, 6, 0, 0]} />
+              <Bar
+                dataKey="total"
+                fill="#6366f1"
+                radius={[6, 6, 0, 0]}
+                barSize={45}
+              />
             </BarChart>
           </ResponsiveContainer>
         )}
@@ -280,7 +314,7 @@ export default function DashboardHome({ usuario }) {
               <table className="dash-tabla">
                 <thead>
                   <tr>
-                    <th>#</th>
+                    <th style={{ width: "60px" }}>Posición</th>
                     <th>Cliente</th>
                     <th>Compras</th>
                     <th>Total gastado</th>
@@ -290,14 +324,8 @@ export default function DashboardHome({ usuario }) {
                   {clientesFrecuentes.map((c, i) => (
                     <tr key={c.id_cliente}>
                       <td>
-                        <span className={`rank rank-${i + 1}`}>
-                          {i === 0
-                            ? "🥇"
-                            : i === 1
-                              ? "🥈"
-                              : i === 2
-                                ? "🥉"
-                                : i + 1}
+                        <span className={`rank-badge rank-${i + 1}`}>
+                          {i + 1}
                         </span>
                       </td>
                       <td>
@@ -325,11 +353,16 @@ export default function DashboardHome({ usuario }) {
         {/* Stock bajo */}
         <div className="dash-card dash-card-chico">
           <h2 className="dash-seccion-titulo">
-            <i className="bi bi-exclamation-circle-fill"></i> Stock Bajo
+            <i className="bi bi-exclamation-circle-fill"></i> Niveles de Stock
+            Críticos
           </h2>
           {stockBajo.length === 0 ? (
-            <div className="dash-vacio">
-              ✅ Todos los productos tienen stock suficiente
+            <div className="dash-vacio-exito">
+              <i
+                className="bi bi-check-circle-fill text-success d-block mb-2"
+                style={{ fontSize: "1.5rem" }}
+              ></i>
+              Todos los productos tienen existencias suficientes
             </div>
           ) : (
             <div className="stock-lista">

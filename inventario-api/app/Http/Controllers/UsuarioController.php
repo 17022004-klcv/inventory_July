@@ -8,36 +8,74 @@ class UsuarioController extends Controller{
 
     //get /api/usuarios 
     public function index(){
-        return response()->json(Usuario::all());
+        try {
+            return response()->json(Usuario::all());
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al obtener usuarios: ' . $e->getMessage()], 500);
+        }
     }
 
     //post /api/usuarios - crear nuevo
     public function store(Request $request){
-        $usuario = Usuario::create([
-        ...$request->except('password_usuario'),
-        'password_usuario' => Hash::make($request->password_usuario)
-    ]);
-    return response()->json($usuario, 201);
+        try {
+            $validated = $request->validate([
+                'nombre_usuario' => 'required|string',
+                'apellido_usuario' => 'required|string',
+                'username' => 'required|string|unique:usuarios',
+                'password_usuario' => 'required|string|min:6',
+                'correo_usuario' => 'nullable|email',
+                'telefono_usuario' => 'nullable|string',
+                'id_tipousuario' => 'nullable|integer',
+                'activo' => 'nullable|boolean'
+            ]);
+
+            $usuario = Usuario::create([
+                ...$validated,
+                'password_usuario' => Hash::make($validated['password_usuario'])
+            ]);
+            
+            return response()->json($usuario, 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['error' => 'Validación fallida', 'errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al crear usuario: ' . $e->getMessage()], 500);
+        }
     }
 
     //put /api/usuarios/{id} - editar
     public function update(Request $request, $id)
     {
-        $usuario = Usuario::find($id);
-        if(!$usuario){
-            return response()->json(['error' => 'Usuario no encontrado'], 404);
+        try {
+            $usuario = Usuario::find($id);
+            if(!$usuario){
+                return response()->json(['error' => 'Usuario no encontrado'], 404);
+            }
+            
+            $data = $request->all();
+            if (isset($data['password_usuario']) && $data['password_usuario']) {
+                $data['password_usuario'] = Hash::make($data['password_usuario']);
+            } else {
+                unset($data['password_usuario']);
+            }
+            
+            $usuario->update($data);
+            return response()->json($usuario);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al actualizar: ' . $e->getMessage()], 500);
         }
-        $usuario->update($request->all());
-        return response()->json($usuario);
     }
 
     //Delete /api/usuario{id} - eliminar
     public function destroy($id){
-        $usuario = Usuario::find($id);
-        if(!$usuario){
-            return response()->json(['error' => 'Uusario no encontrado'], 404);
+        try {
+            $usuario = Usuario::find($id);
+            if(!$usuario){
+                return response()->json(['error' => 'Usuario no encontrado'], 404);
+            }
+            $usuario->delete();
+            return response()->json(['mensaje' => 'Usuario eliminado']);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Error al eliminar: ' . $e->getMessage()], 500);
         }
-        $usuario->delete();
-        return response()->json(['mensaje' => 'Usuario eliminado']);
     }
 }

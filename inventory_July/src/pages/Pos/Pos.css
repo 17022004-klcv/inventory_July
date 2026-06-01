@@ -2,6 +2,7 @@
 .pos-page {
   padding: 24px;
   min-height: 100vh;
+  font-family: "Segoe UI", system-ui, sans-serif;
   background-color: #f4f6f9;
 }
 

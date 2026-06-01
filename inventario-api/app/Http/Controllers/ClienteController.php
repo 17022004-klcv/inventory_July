@@ -6,45 +6,91 @@ use Illuminate\Http\Request;
 class ClienteController extends Controller
 {
     //get api/cliente
-  public function index(Request $request){
-    $query = Cliente::query();
-    
-    if ($request->has('buscar') && $request->buscar != '') {
-        $buscar = $request->buscar;
-        $query->where(function($q) use ($buscar) {
-            $q->where('nombre_cliente', 'ilike', "%{$buscar}%")
-              ->orWhere('apellido_cliente', 'ilike', "%{$buscar}%")
-              ->orWhere('telefono_cliente', 'ilike', "%{$buscar}%");
-        });
+    public function index(Request $request){
+        $query = Cliente::query();
+        
+        if ($request->has('buscar') && $request->buscar != '') {
+            $buscar = $request->buscar;
+            $query->where(function($q) use ($buscar) {
+                $q->where('nombre_cliente', 'ilike', "%{$buscar}%")
+                  ->orWhere('apellido_cliente', 'ilike', "%{$buscar}%")
+                  ->orWhere('telefono_cliente', 'ilike', "%{$buscar}%");
+            });
+        }
+        
+        return response()->json($query->where('activo', true)->get());
     }
-    
-    return response()->json($query->where('activo', true)->get());
-}
 
     //post api/cliente -crear nuevo
     public function store(Request $request){
-        $cliente = Cliente::create($request->all());
-        return response()->json($cliente, 201);
+        try {
+            $validated = $request->validate([
+                'nombre_cliente' => 'required|string|max:100',
+                'apellido_cliente' => 'required|string|max:100',
+                'telefono_cliente' => 'nullable|string|max:20',
+                'correo_cliente' => 'nullable|email|max:100',
+                'activo' => 'nullable|boolean'
+            ]);
+
+            $cliente = Cliente::create($validated);
+            return response()->json($cliente, 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Validación fallida',
+                'detalles' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al crear cliente: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
-    //put api/cliente{id} -editar
+    //put api/cliente/{id} -editar
     public function update(Request $request, $id){
-        $cliente = Cliente::find($id);
-        if(!$cliente){
-            return response() -> json(['error' => 'Cliente no encontrado']);
+        try {
+            $cliente = Cliente::find($id);
+            if(!$cliente){
+                return response()->json(['error' => 'Cliente no encontrado'], 404);
+            }
+
+            $validated = $request->validate([
+                'nombre_cliente' => 'sometimes|string|max:100',
+                'apellido_cliente' => 'sometimes|string|max:100',
+                'telefono_cliente' => 'nullable|string|max:20',
+                'correo_cliente' => 'nullable|email|max:100',
+                'activo' => 'nullable|boolean'
+            ]);
+
+            $cliente->update($validated);
+            return response()->json($cliente, 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Validación fallida',
+                'detalles' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al actualizar cliente: ' . $e->getMessage()
+            ], 500);
         }
-        $cliente -> update($request -> all());
-        return response() -> json($cliente);
     }
 
-    //delte api/cliente{id} -eliminar
+    //delete api/cliente/{id} -eliminar (soft delete)
     public function destroy($id){
-        $cliente = Cliente::find($id);
-
-        if(!$cliente){
-            return response() -> json(['error' => 'Cleinte no encontrado']);
+        try {
+            $cliente = Cliente::find($id);
+            if(!$cliente){
+                return response()->json(['error' => 'Cliente no encontrado'], 404);
+            }
+            
+            // Soft delete: cambiar activo a false
+            $cliente->update(['activo' => false]);
+            return response()->json(['mensaje' => 'Cliente desactivado correctamente']);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Error al desactivar cliente: ' . $e->getMessage()
+            ], 500);
         }
-        $cliente -> delete();
-        return response() -> json(['mensaje' => 'Cliente eliminado']);
     }
 }

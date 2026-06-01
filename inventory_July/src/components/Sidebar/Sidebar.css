@@ -5,7 +5,7 @@
   border-right: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   flex-direction: column;
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: "Segoe UI", system-ui, sans-serif;
   position: fixed;
   top: 0;
   left: 0;
@@ -97,7 +97,11 @@
 }
 
 .nav-item-active {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(6, 182, 212, 0.1));
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.2),
+    rgba(6, 182, 212, 0.1)
+  );
   color: #60a5fa;
   border-left: 2px solid #3b82f6;
 }
@@ -254,6 +258,23 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
+/* Divisor entre secciones del menú */
+.nav-section-divider {
+  height: 1px;
+  background: #e2e8f0; /* Color gris suave que combina con #f8fafc */
+  margin: 16px 12px 12px 12px;
+  opacity: 0.6;
+}
+
+/* Ajuste sutil para los labels cuando no son el primer elemento */
+.nav-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  padding: 0 12px 8px 12px;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .sidebar {
@@ -262,7 +283,7 @@
     transform: translateX(-100%);
     transition: transform 0.3s ease;
   }
-  
+
   .sidebar.mobile-open {
     transform: translateX(0);
   }
