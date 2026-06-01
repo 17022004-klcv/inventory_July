@@ -3,26 +3,25 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\User;
+use App\Models\Usuario; // 🌟 Asegúrate de que llame a tu modelo Usuario
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class PerfilController extends Controller
 {
-    // Obtener datos del perfil pasando el ID
     public function show($id)
     {
-        $user = User::find($id);
+        // Usa Usuario en lugar de User
+        $user = Usuario::find($id);
         if (!$user) {
             return response()->json(['message' => 'Usuario no encontrado'], 404);
         }
         return response()->json($user);
     }
 
-    // Actualizar datos del perfil pasando el ID
     public function update(Request $request, $id)
     {
-        $user = User::find($id);
+        $user = Usuario::find($id);
         if (!$user) {
             return response()->json(['message' => 'Usuario no encontrado'], 404);
         }
@@ -31,9 +30,8 @@ class PerfilController extends Controller
             'nombre_usuario'   => 'required|string|max:100',
             'apellido_usuario' => 'required|string|max:100',
             'telefono_usuario' => 'nullable|string|max:20',
-            // Recuerda cambiar 'users' por tu tabla real si se llama distinto (ej. 'usuarios')
-            'correo_usuario'   => 'required|email|unique:users,correo_usuario,' . $user->id_usuario . ',id_usuario',
-            'username'         => 'required|string|unique:users,username,' . $user->id_usuario . ',id_usuario',
+            'correo_usuario'   => 'required|email|unique:usuarios,correo_usuario,' . $user->id_usuario . ',id_usuario',
+            'username'         => 'required|string|unique:usuarios,username,' . $user->id_usuario . ',id_usuario',
             'password'         => 'nullable|string|min:6|confirmed', 
         ]);
 

@@ -18,4 +18,14 @@ class Usuario extends Model
         'activo',
         'username'
     ];
+
+    protected $hidden = [
+        'password_usuario',
+    ];
+
+   
+    public function getAuthPassword()
+    {
+        return $this->password_usuario;
+    }
 }
