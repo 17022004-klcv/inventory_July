@@ -32,6 +32,13 @@ class ClienteController extends Controller
                 'activo' => 'nullable|boolean'
             ]);
 
+            if (!empty($validated['telefono_cliente'])) {
+                $soloNumeros = preg_replace('/[^0-9]/', '', $validated['telefono_cliente']);
+                if (strlen($soloNumeros) === 8) {
+                    $validated['telefono_cliente'] = substr($soloNumeros, 0, 4) . '-' . substr($soloNumeros, 4);
+                }
+            }
+
             $cliente = Cliente::create($validated);
             return response()->json($cliente, 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -61,6 +68,17 @@ class ClienteController extends Controller
                 'correo_cliente' => 'nullable|email|max:100',
                 'activo' => 'nullable|boolean'
             ]);
+
+            if (array_key_exists('telefono_cliente', $validated)) {
+                if (!empty($validated['telefono_cliente'])) {
+                    $soloNumeros = preg_replace('/[^0-9]/', '', $validated['telefono_cliente']);
+                    if (strlen($soloNumeros) === 8) {
+                        $validated['telefono_cliente'] = substr($soloNumeros, 0, 4) . '-' . substr($soloNumeros, 4);
+                    }
+                } else {
+                    $validated['telefono_cliente'] = null;
+                }
+            }
 
             $cliente->update($validated);
             return response()->json($cliente, 200);

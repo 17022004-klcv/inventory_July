@@ -18,14 +18,70 @@ export default function PerfilView({ usuario, onActualizarUsuario }) {
   const [mensaje, setMensaje] = useState({ tipo: "", texto: "" });
   const [guardando, setGuardando] = useState(false);
 
+  // 🌟 FUNCIÓN EXTRA: Formatea el teléfono automáticamente (Ej: 7777-8888)
+  const formatearTelefonoInput = (valor) => {
+    // Deja solo los números
+    const soloNumeros = valor.replace(/\D/g, "");
+
+    // Si tiene más de 4 dígitos, le mete el guion automáticamente
+    if (soloNumeros.length > 4) {
+      return `${soloNumeros.slice(0, 4)}-${soloNumeros.slice(4, 8)}`;
+    }
+    return soloNumeros;
+  };
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    // 🌟 Si está escribiendo en el teléfono, lo formateamos en tiempo real
+    if (name === "telefono_usuario") {
+      setFormData({ ...formData, [name]: formatearTelefonoInput(value) });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setGuardando(true);
     setMensaje({ tipo: "", texto: "" });
+
+    // 🌟 VALIDACIÓN 1: Validar campos vacíos (Por si acaso)
+    if (
+      !formData.nombre_usuario.trim() ||
+      !formData.apellido_usuario.trim() ||
+      !formData.correo_usuario.trim() ||
+      !formData.username.trim()
+    ) {
+      setMensaje({
+        tipo: "error",
+        texto: "Todos los campos obligatorios deben estar llenos.",
+      });
+      setGuardando(false);
+      return;
+    }
+
+    // 🌟 VALIDACIÓN 2: Validar formato de Correo Electrónico mediante Expresión Regular
+    const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!regexCorreo.test(formData.correo_usuario)) {
+      setMensaje({
+        tipo: "error",
+        texto: "Por favor, introduce un correo electrónico válido.",
+      });
+      setGuardando(false);
+      return;
+    }
+
+    // 🌟 VALIDACIÓN 3: Validar longitud mínima del teléfono si se ingresó
+    if (formData.telefono_usuario && formData.telefono_usuario.length < 9) {
+      // 8 números + 1 guion = 9 caracteres
+      setMensaje({
+        tipo: "error",
+        texto: "El número de teléfono debe tener 8 dígitos.",
+      });
+      setGuardando(false);
+      return;
+    }
 
     if (
       formData.password &&
@@ -52,6 +108,11 @@ export default function PerfilView({ usuario, onActualizarUsuario }) {
       if (res.ok) {
         setMensaje({ tipo: "exito", texto: "¡Perfil actualizado con éxito!" });
         setEditando(false);
+        setFormData((prev) => ({
+          ...prev,
+          password: "",
+          password_confirmation: "",
+        }));
         if (onActualizarUsuario) onActualizarUsuario(data.user);
       } else {
         setMensaje({
@@ -83,7 +144,6 @@ export default function PerfilView({ usuario, onActualizarUsuario }) {
             <p className="perfil-rol">Usuario del Sistema</p>
           </div>
 
-          {/* Botón de edición con la estética de tus capturas */}
           {!editando && (
             <button
               className="btn-accion-editar"
@@ -150,6 +210,8 @@ export default function PerfilView({ usuario, onActualizarUsuario }) {
                 value={formData.telefono_usuario}
                 onChange={handleChange}
                 disabled={!editando}
+                placeholder="0000-0000"
+                maxLength={9} // Evita que escriban de más
               />
             </div>
 

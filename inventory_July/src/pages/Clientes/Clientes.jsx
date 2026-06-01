@@ -75,9 +75,22 @@ export default function Clientes() {
     setError("");
   };
 
+  const formatearTelefonoInput = (valor) => {
+    const soloNumeros = valor.replace(/\D/g, "");
+    if (soloNumeros.length > 4) {
+      return `${soloNumeros.slice(0, 4)}-${soloNumeros.slice(4, 8)}`;
+    }
+    return soloNumeros;
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+
+    if (name === "telefono_cliente") {
+      setForm((prev) => ({ ...prev, [name]: formatearTelefonoInput(value) }));
+    } else {
+      setForm((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const mostrarExito = (msg) => {
