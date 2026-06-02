@@ -7,15 +7,11 @@ use App\Models\Productos;
 
 class ProductosController extends Controller
 {
-    /*get api/productos - listar todos
+    //get api/productos - listar todos
     public function index(){
     return response()->json(Productos::with(['categoria', 'proveedor'])->get());
-}*/
+}
 
-    public function index()
-    {
-        return response()->json(Productos::with(['categoria', 'proveedor'])->where('activo', true)->get());
-    }
 
     //post api/productos
     public function store(ProductoRequest $request)

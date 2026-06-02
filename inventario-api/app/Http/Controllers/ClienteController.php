@@ -17,8 +17,7 @@ class ClienteController extends Controller
                   ->orWhere('telefono_cliente', 'ilike', "%{$buscar}%");
             });
         }
-        
-        return response()->json($query->where('activo', true)->get());
+        return response()->json($query->get());
     }
 
     //post api/cliente -crear nuevo
